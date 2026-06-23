@@ -49,4 +49,15 @@ enum QuarantineReader {
             downloadDate: date
         )
     }
+
+    /// 删除指定 URL 的 com.apple.quarantine 扩展属性。
+    /// - Returns: 成功返回 nil，失败返回错误描述。
+    @discardableResult
+    static func remove(for url: URL) -> String? {
+        let path = url.path
+        let res = removexattr(path, "com.apple.quarantine", 0)
+        if res == 0 { return nil }
+        let code = errno
+        return String(cString: strerror(code))
+    }
 }
