@@ -10,42 +10,54 @@ struct DetailView: View {
     @State private var quarantineRemoved: Bool = false
     @State private var removeError: String?
 
+    /// 顶部三个状态对应的目标位置锚点。
+    enum DetailAnchor: Hashable {
+        case codeSign
+        case quarantine
+        case architectures
+    }
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                headerSection
-                basicSection
-                runtimeSection
-                architecturesSection
-                documentTypesSection
-                urlSchemesSection
-                quarantineSection
-                codeSignSection
-                entitlementsSection
-                fileSection
-                rawPlistSection
-                rawCodesignSection
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    headerSection(proxy: proxy)
+                    basicSection
+                    runtimeSection
+                    architecturesSection
+                        .id(DetailAnchor.architectures)
+                    documentTypesSection
+                    urlSchemesSection
+                    quarantineSection
+                        .id(DetailAnchor.quarantine)
+                    codeSignSection
+                        .id(DetailAnchor.codeSign)
+                    entitlementsSection
+                    fileSection
+                    rawPlistSection
+                    rawCodesignSection
+                }
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(20)
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .navigationTitle(info.bundleURL.lastPathComponent)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    NSWorkspace.shared.activateFileViewerSelecting([info.bundleURL])
-                } label: { Label("在访达中显示", systemImage: "folder") }
-            }
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    copyToPasteboard(summaryString())
-                } label: { Label("复制摘要", systemImage: "doc.on.doc") }
+            .navigationTitle(info.bundleURL.lastPathComponent)
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        NSWorkspace.shared.activateFileViewerSelecting([info.bundleURL])
+                    } label: { Label("在访达中显示", systemImage: "folder") }
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        copyToPasteboard(summaryString())
+                    } label: { Label("复制摘要", systemImage: "doc.on.doc") }
+                }
             }
         }
     }
 
     // MARK: 顶部头
-    private var headerSection: some View {
+    private func headerSection(proxy: ScrollViewProxy) -> some View {
         HStack(alignment: .top, spacing: 16) {
             if let icon = info.icon {
                 Image(nsImage: icon)
@@ -70,15 +82,49 @@ struct DetailView: View {
                     .textSelection(.enabled)
             }
             Spacer()
-            VStack(alignment: .trailing, spacing: 6) {
-                Badge(text: info.codeSign.state.rawValue,
-                      color: badgeColor(for: info.codeSign.state))
-                Badge(text: info.codeSign.validity.rawValue,
-                      color: validityColor(info.codeSign.validity))
-                if info.quarantine != nil {
-                    Badge(text: "已隔离", color: .yellow)
-                } else {
-                    Badge(text: "无隔离", color: .gray)
+            VStack(alignment: .trailing, spacing: 8) {
+                // 顺序与下方分区一致：架构 → 隔离 → 代码签名
+                Button {
+                    withAnimation { proxy.scrollTo(DetailAnchor.architectures, anchor: .top) }
+                } label: {
+                    let archLabel = info.architectures.isEmpty
+                        ? "未知架构"
+                        : (info.architectures.count > 1
+                            ? "Universal (\(info.architectures.count) 切片)"
+                            : info.architectures.first!.name)
+                    Badge(text: archLabel, color: .blue)
+                }
+                .buttonStyle(.plain)
+                .help("跳转到「架构」分区")
+
+                Button {
+                    withAnimation { proxy.scrollTo(DetailAnchor.quarantine, anchor: .top) }
+                } label: {
+                    Badge(text: info.quarantine != nil ? "已隔离" : "无隔离",
+                          color: info.quarantine != nil ? .yellow : .gray)
+                }
+                .buttonStyle(.plain)
+                .help("跳转到「Quarantine」分区")
+
+                // 签名状态 + 有效性，同一行，两个都跳转到代码签名分区
+                HStack(spacing: 6) {
+                    Button {
+                        withAnimation { proxy.scrollTo(DetailAnchor.codeSign, anchor: .top) }
+                    } label: {
+                        Badge(text: info.codeSign.state.rawValue,
+                              color: badgeColor(for: info.codeSign.state))
+                    }
+                    .buttonStyle(.plain)
+                    .help("跳转到「代码签名」分区")
+
+                    Button {
+                        withAnimation { proxy.scrollTo(DetailAnchor.codeSign, anchor: .top) }
+                    } label: {
+                        Badge(text: info.codeSign.validity.rawValue,
+                              color: validityColor(info.codeSign.validity))
+                    }
+                    .buttonStyle(.plain)
+                    .help("跳转到「代码签名」分区")
                 }
             }
         }
