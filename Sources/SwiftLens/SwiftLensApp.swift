@@ -92,6 +92,64 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         if info.appTransportSecurity != nil { lines.append("ATS: 已声明 NSAppTransportSecurity") }
         if info.electronAsarIntegrity != nil { lines.append("Electron: 已声明 ElectronAsarIntegrity") }
+        if info.lsUIElement == true { lines.append("形态: Agent App (无 Dock 图标)") }
+        if info.lsBackgroundOnly == true { lines.append("形态: 仅后台运行 (LSBackgroundOnly)") }
+        if info.isIOSPort { lines.append("形态: iOS 移植包 (含 UI* 键)") }
+        // Sparkle 自动更新
+        if let sp = info.extra.sparkle {
+            lines.append("Sparkle 自动更新:")
+            if let v = sp.feedURL { lines.append("  SUFeedURL: \(v)") }
+            if let v = sp.publicEDKey { lines.append("  SUPublicEDKey: \(v)") }
+            if let v = sp.publicDSAKeyFile { lines.append("  SUPublicDSAKeyFile: \(v)") }
+            if let v = sp.enableAutomaticChecks { lines.append("  SUEnableAutomaticChecks: \(v)") }
+            if let v = sp.scheduledCheckInterval {
+                lines.append("  SUScheduledCheckInterval: \(v) 秒 (\(Double(v)/86400.0) 天)")
+            }
+            if let v = sp.allowsAutomaticUpdates { lines.append("  SUAllowsAutomaticUpdates: \(v)") }
+            if let v = sp.enableInstallerLauncherService { lines.append("  SUEnableInstallerLauncherService: \(v)") }
+            if let v = sp.enableDownloaderService { lines.append("  SUEnableDownloaderService: \(v)") }
+            if let v = sp.showReleaseNotes { lines.append("  SUShowReleaseNotes: \(v)") }
+            if let v = sp.enableSystemProfiling { lines.append("  SUEnableSystemProfiling: \(v)") }
+            if let v = sp.sendProfileInfo { lines.append("  SUSendProfileInfo: \(v)") }
+            if let v = sp.enableJavaScript { lines.append("  SUEnableJavaScript: \(v)") }
+            if let v = sp.bundleName { lines.append("  SUBundleName: \(v)") }
+        }
+        // AppleScript / Siri
+        let ex = info.extra
+        if let v = ex.appleScriptEnabled { lines.append("NSAppleScriptEnabled: \(v)") }
+        if let v = ex.scriptingDefinition { lines.append("OSAScriptingDefinition: \(v)") }
+        if !ex.userActivityTypes.isEmpty {
+            lines.append("NSUserActivityTypes: \(ex.userActivityTypes.joined(separator: ", "))")
+        }
+        if !ex.intentsSupported.isEmpty {
+            lines.append("INIntentsSupported (Siri): \(ex.intentsSupported.joined(separator: ", "))")
+        }
+        if let v = ex.safariExtensionCorrespondingIOSApp {
+            lines.append("SFSafariCorrespondingIOSAppBundleIdentifier: \(v)")
+        }
+        // iCloud
+        if !ex.ubiquitousContainers.isEmpty {
+            lines.append("iCloud Containers (\(ex.ubiquitousContainers.count) 项):")
+            for (i, c) in ex.ubiquitousContainers.enumerated() {
+                lines.append("  [\(i)] \(InfoPlistParser.flatten(c).map { "\($0.0)=\($0.1)" }.joined(separator: ", "))")
+            }
+        }
+        // Notifications
+        if let v = ex.userNotificationAlertStyle { lines.append("NSUserNotificationAlertStyle: \(v)") }
+        if let v = ex.userNotificationsUsageDescription { lines.append("NSUserNotificationsUsageDescription: \(v)") }
+        if let v = ex.localNotificationUsageDescription { lines.append("NSLocalNotificationUsageDescription: \(v)") }
+        if let v = ex.remoteNotificationUsageDescription { lines.append("NSRemoteNotificationUsageDescription: \(v)") }
+        // 杂项开关
+        if let v = ex.supportsSuddenTermination { lines.append("NSSupportsSuddenTermination: \(v)") }
+        if let v = ex.supportsAutomaticTermination { lines.append("NSSupportsAutomaticTermination: \(v)") }
+        if let v = ex.lsRequiresCarbon { lines.append("LSRequiresCarbon: \(v)") }
+        if let v = ex.lsRequiresNativeExecution { lines.append("LSRequiresNativeExecution: \(v)") }
+        if let v = ex.lsMultipleInstancesProhibited { lines.append("LSMultipleInstancesProhibited: \(v)") }
+        if let v = ex.lsHasLocalizedDisplayName { lines.append("LSHasLocalizedDisplayName: \(v)") }
+        if let v = ex.lsFileQuarantineEnabled { lines.append("LSFileQuarantineEnabled: \(v)") }
+        if let v = ex.gpuEjectPolicy { lines.append("GPUEjectPolicy: \(v)") }
+        if let v = ex.gpuSelectionPolicy { lines.append("GPUSelectionPolicy: \(v)") }
+        if let v = ex.itmsAppUsesNonExemptEncryption { lines.append("ITSAppUsesNonExemptEncryption: \(v)") }
         if let q = info.quarantine {
             lines.append("Quarantine: flags=\(q.flags) agent=\(q.agent) 时间=\(q.timestampString) 日期=\(q.downloadDate.map { ISO8601DateFormatter().string(from: $0) } ?? "—")")
         } else {

@@ -67,8 +67,11 @@ struct AppInfo {
 
     // 权限 / 沙盒
     let hasDockIcon: Bool?
+    let lsUIElement: Bool?                 // 代理应用 (无 Dock 图标 / 无菜单栏)
+    let lsBackgroundOnly: Bool?            // 仅后台运行
     let documentControllerEnabled: Bool?
     let privacyEntries: [PrivacyEntry]   // NS***UsageDescription
+    let isIOSPort: Bool                    // 是否带 iOS-only Info.plist 键
 
     // 文件系统
     let fileSize: UInt64
@@ -93,6 +96,9 @@ struct AppInfo {
     // 子 bundle
     let subBundles: [SubBundle]
     let subBundlesTotalSize: UInt64
+
+    // 其它高价值键 (Sparkle / AppleScript / iCloud / Notifications / 开关)
+    let extra: ExtraInfo
 
     // 图标
     let icon: NSImage?
@@ -170,6 +176,18 @@ enum AppInfoLoader {
         // 扩展属性全列表
         let extendedXattrs = ExtendedXattrReader.read(for: url)
 
+        // LSUIElement / LSBackgroundOnly
+        let lsUIElement = rawPlist["LSUIElement"] as? Bool
+        let lsBackgroundOnly = rawPlist["LSBackgroundOnly"] as? Bool
+
+        // iOS 移植包特征：含 UIDeviceFamily / UILaunchStoryboardName / UIRequiresFullScreen 等
+        let isIOSPort = ["UIDeviceFamily",
+                         "UILaunchStoryboardName",
+                         "UIRequiresFullScreen",
+                         "UISupportedInterfaceOrientations",
+                         "UIStatusBarStyle"]
+            .contains { rawPlist[$0] != nil }
+
         // 图标
         var icon: NSImage?
         let iconURL = url.appendingPathComponent("Contents/Resources/\(str("CFBundleIconFile") ?? "AppIcon")")
@@ -227,9 +245,12 @@ enum AppInfoLoader {
             exportedTypeIdentifiers: dict("UTExportedTypeDeclarations"),
             importedTypeIdentifiers: dict("UTImportedTypeDeclarations"),
             services: dict("NSServices"),
-            hasDockIcon: (rawPlist["LSUIElement"] as? Bool) == false ? true : nil,
+            hasDockIcon: lsUIElement != true,
+            lsUIElement: lsUIElement,
+            lsBackgroundOnly: lsBackgroundOnly,
             documentControllerEnabled: (rawPlist["NSMainNibFile"] != nil),
             privacyEntries: privacyEntries,
+            isIOSPort: isIOSPort,
             fileSize: fileSize,
             modificationDate: modDate,
             creationDate: creationDate,
@@ -242,6 +263,7 @@ enum AppInfoLoader {
             architectures: ArchitectureReader.read(for: url),
             subBundles: subResult.subBundles,
             subBundlesTotalSize: subResult.totalSize,
+            extra: ExtraInfoReader.read(from: rawPlist),
             icon: icon
         )
     }

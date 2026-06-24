@@ -43,6 +43,11 @@ struct DetailView: View {
                     entitlementsSection
                     subBundlesSection
                         .id(DetailAnchor.subBundles)
+                    sparkleSection
+                    appleScriptSiriSection
+                    iCloudSection
+                    notificationsSection
+                    behaviorsSection
                     fileSection
                     rawPlistSection
                     rawCodesignSection
@@ -106,6 +111,17 @@ struct DetailView: View {
                 }
                 .buttonStyle(.plain)
                 .help("跳转到「架构」分区")
+
+                // Agent App / 仅后台 / iOS 移植 等标识
+                if info.lsUIElement == true {
+                    Badge(text: "Agent App (无 Dock)", color: .purple)
+                }
+                if info.lsBackgroundOnly == true {
+                    Badge(text: "仅后台 (Background)", color: .indigo)
+                }
+                if info.isIOSPort {
+                    Badge(text: "iOS 移植包", color: .pink)
+                }
 
                 Button {
                     withAnimation { proxy.scrollTo(DetailAnchor.quarantine, anchor: .top) }
@@ -596,6 +612,161 @@ struct DetailView: View {
         }
     }
 
+    // MARK: Sparkle 自动更新
+    private var sparkleSection: some View {
+        if let sp = info.extra.sparkle {
+            return AnyView(
+                SectionView("Sparkle 自动更新",
+                            subtitle: sp.feedURL ?? "已声明") {
+                    if let v = sp.feedURL { RowView(key: "SUFeedURL", value: v) }
+                    if let v = sp.publicEDKey { RowView(key: "SUPublicEDKey", value: v) }
+                    if let v = sp.publicDSAKeyFile { RowView(key: "SUPublicDSAKeyFile", value: v) }
+                    if let v = sp.bundleName { RowView(key: "SUBundleName", value: v) }
+                    if let v = sp.enableAutomaticChecks { RowView(key: "SUEnableAutomaticChecks", value: bool(v)) }
+                    if let v = sp.scheduledCheckInterval {
+                        RowView(key: "SUScheduledCheckInterval",
+                                value: "\(v) 秒 (\(Double(v)/86400) 天)")
+                    }
+                    if let v = sp.allowsAutomaticUpdates { RowView(key: "SUAllowsAutomaticUpdates", value: bool(v)) }
+                    if let v = sp.enableInstallerLauncherService { RowView(key: "SUEnableInstallerLauncherService", value: bool(v)) }
+                    if let v = sp.enableDownloaderService { RowView(key: "SUEnableDownloaderService", value: bool(v)) }
+                    if let v = sp.showReleaseNotes { RowView(key: "SUShowReleaseNotes", value: bool(v)) }
+                    if let v = sp.enableSystemProfiling { RowView(key: "SUEnableSystemProfiling", value: bool(v)) }
+                    if let v = sp.sendProfileInfo { RowView(key: "SUSendProfileInfo", value: bool(v)) }
+                    if let v = sp.enableJavaScript { RowView(key: "SUEnableJavaScript", value: bool(v)) }
+                }
+            )
+        } else {
+            return AnyView(EmptyView())
+        }
+    }
+
+    // MARK: AppleScript & Siri Intents
+    private var appleScriptSiriSection: some View {
+        let ex = info.extra
+        let siriApple = ex.appleScriptEnabled != nil
+            || ex.scriptingDefinition != nil
+            || !ex.userActivityTypes.isEmpty
+            || !ex.intentsSupported.isEmpty
+            || ex.safariExtensionCorrespondingIOSApp != nil
+        return SectionView(
+            "AppleScript / Siri / Intents",
+            subtitle: siriApple ? nil : "无"
+        ) {
+            if !siriApple {
+                PlaceholderRow(text: "未声明 AppleScript / Siri 相关支持")
+            } else {
+                if let v = ex.appleScriptEnabled { RowView(key: "NSAppleScriptEnabled", value: bool(v)) }
+                if let v = ex.scriptingDefinition { RowView(key: "OSAScriptingDefinition (.sdef)", value: v) }
+                if !ex.userActivityTypes.isEmpty {
+                    Divider().padding(.vertical, 2)
+                    Text("NSUserActivityTypes")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    ForEach(ex.userActivityTypes, id: \.self) { s in
+                        RowView(key: "• ", value: s)
+                    }
+                }
+                if !ex.intentsSupported.isEmpty {
+                    Divider().padding(.vertical, 2)
+                    Text("INIntentsSupported (Siri)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    ForEach(ex.intentsSupported, id: \.self) { s in
+                        RowView(key: "• ", value: s)
+                    }
+                }
+                if let v = ex.safariExtensionCorrespondingIOSApp {
+                    Divider().padding(.vertical, 2)
+                    RowView(key: "SFSafariCorrespondingIOSAppBundleIdentifier", value: v)
+                }
+            }
+        }
+    }
+
+    // MARK: iCloud 容器
+    private var iCloudSection: some View {
+        let ub = info.extra.ubiquitousContainers
+        return SectionView("iCloud (NSUbiquitousContainers)",
+                           subtitle: ub.isEmpty ? "无" : "\(ub.count) 项") {
+            if ub.isEmpty {
+                PlaceholderRow(text: "未声明 iCloud 容器")
+            } else {
+                ForEach(Array(ub.enumerated()), id: \.offset) { i, c in
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(InfoPlistParser.flatten(c).sorted(by: { $0.0 < $1.0 }), id: \.0) { row in
+                            RowView(key: row.0, value: row.1)
+                        }
+                    }
+                    .padding(8)
+                    .background(RoundedRectangle(cornerRadius: 6).fill(.quaternary.opacity(0.3)))
+                    if i < ub.count - 1 { Spacer().frame(height: 4) }
+                }
+            }
+        }
+    }
+
+    // MARK: 通知
+    private var notificationsSection: some View {
+        let ex = info.extra
+        let any = (ex.userNotificationAlertStyle != nil
+                   || ex.userNotificationsUsageDescription != nil
+                   || ex.localNotificationUsageDescription != nil
+                   || ex.remoteNotificationUsageDescription != nil)
+        return SectionView("通知 (Notifications)", subtitle: any ? nil : "无") {
+            if !any {
+                PlaceholderRow(text: "未声明通知相关键")
+            } else {
+                if let v = ex.userNotificationAlertStyle {
+                    RowView(key: "NSUserNotificationAlertStyle", value: v)
+                }
+                if let v = ex.userNotificationsUsageDescription {
+                    RowView(key: "NSUserNotificationsUsageDescription", value: v)
+                }
+                if let v = ex.localNotificationUsageDescription {
+                    RowView(key: "NSLocalNotificationUsageDescription", value: v)
+                }
+                if let v = ex.remoteNotificationUsageDescription {
+                    RowView(key: "NSRemoteNotificationUsageDescription", value: v)
+                }
+            }
+        }
+    }
+
+    // MARK: 杂项开发/生命周期开关
+    private var behaviorsSection: some View {
+        let ex = info.extra
+        let any = (ex.supportsSuddenTermination != nil
+                   || ex.supportsAutomaticTermination != nil
+                   || ex.lsRequiresCarbon != nil
+                   || ex.lsRequiresNativeExecution != nil
+                   || ex.lsMultipleInstancesProhibited != nil
+                   || ex.lsHasLocalizedDisplayName != nil
+                   || ex.lsFileQuarantineEnabled != nil
+                   || ex.gpuEjectPolicy != nil
+                   || ex.gpuSelectionPolicy != nil
+                   || ex.itmsAppUsesNonExemptEncryption != nil)
+        return SectionView("杂项开关 (生命周期 / 加密合规 / GPU)",
+                           subtitle: any ? nil : "无") {
+            if !any {
+                PlaceholderRow(text: "无相关开关")
+            } else {
+                if let v = ex.supportsSuddenTermination { RowView(key: "NSSupportsSuddenTermination", value: bool(v)) }
+                if let v = ex.supportsAutomaticTermination { RowView(key: "NSSupportsAutomaticTermination", value: bool(v)) }
+                if let v = ex.lsRequiresCarbon { RowView(key: "LSRequiresCarbon", value: bool(v)) }
+                if let v = ex.lsRequiresNativeExecution { RowView(key: "LSRequiresNativeExecution", value: bool(v)) }
+                if let v = ex.lsMultipleInstancesProhibited { RowView(key: "LSMultipleInstancesProhibited", value: bool(v)) }
+                if let v = ex.lsHasLocalizedDisplayName { RowView(key: "LSHasLocalizedDisplayName", value: bool(v)) }
+                if let v = ex.lsFileQuarantineEnabled { RowView(key: "LSFileQuarantineEnabled", value: bool(v)) }
+                if let v = ex.gpuEjectPolicy { RowView(key: "GPUEjectPolicy", value: v) }
+                if let v = ex.gpuSelectionPolicy { RowView(key: "GPUSelectionPolicy", value: v) }
+                if let v = ex.itmsAppUsesNonExemptEncryption {
+                    RowView(key: "ITSAppUsesNonExemptEncryption", value: bool(v))
+                }
+            }
+        }
+    }
+
     // MARK: helpers
     private func bool(_ v: Bool?) -> String {
         switch v {
@@ -687,6 +858,41 @@ struct DetailView: View {
         }
         if info.appTransportSecurity != nil { lines.append("ATS: 已声明 NSAppTransportSecurity") }
         if info.electronAsarIntegrity != nil { lines.append("Electron: 已声明 ElectronAsarIntegrity") }
+        if info.lsUIElement == true { lines.append("形态: Agent App (无 Dock 图标)") }
+        if info.lsBackgroundOnly == true { lines.append("形态: 仅后台运行") }
+        if info.isIOSPort { lines.append("形态: iOS 移植包") }
+        let ex = info.extra
+        if let sp = info.extra.sparkle {
+            lines.append("Sparkle:")
+            if let v = sp.feedURL { lines.append("  SUFeedURL: \(v)") }
+            if let v = sp.scheduledCheckInterval {
+                lines.append("  SUScheduledCheckInterval: \(v) 秒 (\(Double(v)/86400.0) 天)")
+            }
+            if let v = sp.publicEDKey { lines.append("  SUPublicEDKey: \(v)") }
+            if let v = sp.publicDSAKeyFile { lines.append("  SUPublicDSAKeyFile: \(v)") }
+            if let v = sp.enableAutomaticChecks { lines.append("  SUEnableAutomaticChecks: \(v)") }
+            if let v = sp.allowsAutomaticUpdates { lines.append("  SUAllowsAutomaticUpdates: \(v)") }
+        }
+        if let v = ex.appleScriptEnabled { lines.append("NSAppleScriptEnabled: \(v)") }
+        if let v = ex.scriptingDefinition { lines.append("OSAScriptingDefinition: \(v)") }
+        if !ex.userActivityTypes.isEmpty {
+            lines.append("NSUserActivityTypes: \(ex.userActivityTypes.joined(separator: ", "))")
+        }
+        if !ex.intentsSupported.isEmpty {
+            lines.append("INIntentsSupported (Siri): \(ex.intentsSupported.joined(separator: ", "))")
+        }
+        if let v = ex.safariExtensionCorrespondingIOSApp {
+            lines.append("SFSafariCorrespondingIOSAppBundleIdentifier: \(v)")
+        }
+        if !ex.ubiquitousContainers.isEmpty { lines.append("iCloud Containers: \(ex.ubiquitousContainers.count) 项") }
+        if let v = ex.userNotificationAlertStyle { lines.append("NSUserNotificationAlertStyle: \(v)") }
+        if let v = ex.supportsSuddenTermination { lines.append("NSSupportsSuddenTermination: \(v)") }
+        if let v = ex.supportsAutomaticTermination { lines.append("NSSupportsAutomaticTermination: \(v)") }
+        if let v = ex.itmsAppUsesNonExemptEncryption { lines.append("ITSAppUsesNonExemptEncryption: \(v)") }
+        if let v = ex.lsMultipleInstancesProhibited { lines.append("LSMultipleInstancesProhibited: \(v)") }
+        if let v = ex.lsFileQuarantineEnabled { lines.append("LSFileQuarantineEnabled: \(v)") }
+        if let v = ex.gpuEjectPolicy { lines.append("GPUEjectPolicy: \(v)") }
+        if let v = ex.gpuSelectionPolicy { lines.append("GPUSelectionPolicy: \(v)") }
         if let q = info.quarantine { lines.append("Quarantine: flags=\(q.flags) agent=\(q.agent) 时间=\(q.timestampString)") }
         else { lines.append("Quarantine: 无") }
         if !info.extendedXattrs.names.isEmpty {

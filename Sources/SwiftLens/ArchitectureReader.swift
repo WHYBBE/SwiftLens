@@ -67,7 +67,6 @@ enum ArchitectureReader {
             guard off + archSize <= data.count else { break }
             let cpuType = Int32(bitPattern: data.readUInt32BE(at: off))
             let cpuSub  = Int32(bitPattern: data.readUInt32BE(at: off + 4))
-            _ = cpuSub
             let thingOffset: UInt64
             let thingSize: UInt64
             if is64 {
@@ -77,7 +76,7 @@ enum ArchitectureReader {
                 thingOffset = UInt64(data.readUInt32BE(at: off + 8))
                 thingSize   = UInt64(data.readUInt32BE(at: off + 12))
             }
-            let (name, cpuName, bits) = describeCpu(cpuType)
+            let (name, cpuName, bits) = describeCpu(cpuType, subtype: cpuSub)
             archs.append(ArchInfo(
                 name: name,
                 cpuType: cpuName,
@@ -94,27 +93,46 @@ enum ArchitectureReader {
     private static func parseSingle(data: Data, fatOffset: UInt64, execPath: URL) -> ArchInfo? {
         guard data.count >= Int(fatOffset) + 28 else { return nil }
         let magBE = data.readUInt32BE(at: Int(fatOffset))
+        let magLE = data.readUInt32LE(at: Int(fatOffset))
         let bigEndian: Bool
         switch magBE {
-        case MH_MAGIC, MH_MAGIC_64:
+        case UInt32(MH_MAGIC), UInt32(MH_MAGIC_64):
+            // 大端存储：magic 以 BE 方式解读后等于 MH_MAGIC*
             bigEndian = true
-        case MH_CIGAM, MH_CIGAM_64:
+        case UInt32(MH_CIGAM), UInt32(MH_CIGAM_64):
+            // BE 解读得到 CIGAM，说明实际是小端
             bigEndian = false
         default:
-            return nil
+            // 兜底：字节序由 LE 解读后是否等于 MH_MAGIC* 决定
+            if magLE == UInt32(MH_MAGIC) || magLE == UInt32(MH_MAGIC_64) {
+                bigEndian = false
+            } else if magLE == UInt32(MH_CIGAM) || magLE == UInt32(MH_CIGAM_64) {
+                bigEndian = true
+            } else {
+                return nil
+            }
         }
         let raw = bigEndian ? data.readUInt32BE(at: Int(fatOffset) + 4)
                             : data.readUInt32LE(at: Int(fatOffset) + 4)
         let cputype = Int32(bitPattern: raw)
+        // mach_header 之后是 cpusubtype (4 字节); 为判别 arm64e 同样需读取
+        let subRaw = bigEndian ? data.readUInt32BE(at: Int(fatOffset) + 8)
+                               : data.readUInt32LE(at: Int(fatOffset) + 8)
+        let cpusubtype = Int32(bitPattern: subRaw)
         let size = fileSize(of: execPath)
-        let (name, cpuName, bits) = describeCpu(cputype)
+        let (name, cpuName, bits) = describeCpu(cputype, subtype: cpusubtype)
         return ArchInfo(name: name, cpuType: cpuName, bits: bits, fileSize: size, offsetInFat: fatOffset)
     }
 
-    private static func describeCpu(_ cputype: Int32) -> (name: String, cpuType: String, bits: Int) {
+    private static func describeCpu(_ cputype: Int32, subtype: Int32) -> (name: String, cpuType: String, bits: Int) {
         switch cputype {
         case CPU_TYPE_ARM64:
-            return ("arm64", "ARM 64-bit", 64)
+            // CPU_SUBTYPE_ARM64E = 2 (带指针身份验证扩展)。
+            // mach_header 中 cpusubtype 高位常被设为库授权位 (0x80000000)，需要屏蔽。
+            let sub = UInt32(bitPattern: subtype) & 0x00FFFFFF
+            if sub == 2 { return ("arm64e", "ARM 64-bit (arm64e, 带指针身份验证)", 64) }
+            if sub == 0 { return ("arm64", "ARM 64-bit", 64) }
+            return ("arm64(sub=\(sub))", "ARM 64-bit", 64)
         case CPU_TYPE_ARM:
             return ("arm", "ARM", 32)
         case CPU_TYPE_X86_64:
