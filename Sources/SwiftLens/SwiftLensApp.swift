@@ -48,16 +48,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         lines.append("SDK: \(info.sdkVersion ?? "—") / \(info.platformName ?? "—") \(info.sdkBuild ?? "")")
         lines.append("Info.plist keys: \(info.flatRows.count) 项")
         lines.append("架构: \(info.architectures.map { "\($0.name)(\($0.bits)-bit, \($0.cpuType))" }.joined(separator: ", "))")
-        lines.append("URL Schemes: \(info.urlSchemes.joined(separator: ", ").isEmpty ? "—" : info.urlSchemes.joined(separator: ", "))")
+        if !info.supportedPlatforms.isEmpty {
+            lines.append("支持平台: \(info.supportedPlatforms.joined(separator: ", "))")
+        }
+        if let p = info.principalClass { lines.append("NSPrincipalClass: \(p)") }
+        if let c = info.humanReadableCopyright { lines.append("版权: \(c)") }
+        lines.append("URL Schemes: \(info.urlSchemes.isEmpty ? "—" : info.urlSchemes.joined(separator: ", "))")
         lines.append("文档类型: \(info.documentTypes.count) 项")
         let cs = info.codeSign
-        lines.append("签名: \(cs.state.rawValue) — \(cs.validity.rawValue)")
+        lines.append("签名: \(cs.state.rawValue) — \(cs.validity.rawValue) — \(cs.notarization.rawValue)")
+        if let v = cs.format { lines.append("  Format: \(v)") }
         if let v = cs.identifier { lines.append("  Identifier: \(v)") }
         if let v = cs.teamIdentifier { lines.append("  TeamIdentifier: \(v)") }
         if let v = cs.cdHash { lines.append("  CDHash: \(v)") }
         if let v = cs.hashType { lines.append("  HashType: \(v)") }
         if let v = cs.signatureType { lines.append("  Signature: \(v)") }
-        if let v = cs.flags { lines.append("  flags: \(v)") }
+        if let v = cs.runtimeVersion { lines.append("  Runtime Version: \(v)") }
+        if !cs.decodedFlags.isEmpty { lines.append("  flags(解码): \(cs.decodedFlags.joined(separator: ", "))") }
+        if let v = cs.flags { lines.append("  flags(原始): \(v)") }
+        if let v = cs.sealedResourcesVersion {
+            var sealed = "version=\(v)"
+            if let r = cs.sealedResourcesRules { sealed += " rules=\(r)" }
+            if let f = cs.sealedResourcesFiles { sealed += " files=\(f)" }
+            lines.append("  Sealed Resources: \(sealed)")
+        }
         if !cs.authorities.isEmpty {
             lines.append("  Authority:")
             cs.authorities.forEach { lines.append("    - \($0)") }
@@ -69,10 +83,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             lines.append("  Entitlements: 无")
         }
+        lines.append("隐私权限描述: \(info.privacyEntries.count) 项")
+        for e in info.privacyEntries.prefix(8) {
+            lines.append("  · \(e.displayTitle) [\(e.key)]: \(e.description)")
+        }
+        if info.privacyEntries.count > 8 {
+            lines.append("  ... 另外 \(info.privacyEntries.count - 8) 项")
+        }
+        if info.appTransportSecurity != nil { lines.append("ATS: 已声明 NSAppTransportSecurity") }
+        if info.electronAsarIntegrity != nil { lines.append("Electron: 已声明 ElectronAsarIntegrity") }
         if let q = info.quarantine {
             lines.append("Quarantine: flags=\(q.flags) agent=\(q.agent) 时间=\(q.timestampString) 日期=\(q.downloadDate.map { ISO8601DateFormatter().string(from: $0) } ?? "—")")
         } else {
             lines.append("Quarantine: 无")
+        }
+        if !info.extendedXattrs.names.isEmpty {
+            lines.append("扩展属性 (xattrs): \(info.extendedXattrs.names.joined(separator: ", "))")
+        }
+        lines.append("子 bundle: \(info.subBundles.count) 项 (\(ByteCountFormatter.string(fromByteCount: Int64(info.subBundlesTotalSize), countStyle: .file)))")
+        for sub in info.subBundles.prefix(8) {
+            lines.append("  · [\(sub.kind.rawValue)] \(sub.relativePath) — \(sub.bundleIdentifier ?? "—") (\(sub.signatureState.rawValue))")
+        }
+        if info.subBundles.count > 8 {
+            lines.append("  ... 另外 \(info.subBundles.count - 8) 项")
         }
         lines.append("文件大小: \(info.formattedFileSize()) (\(info.fileSize) 字节)")
         return lines.joined(separator: "\n")

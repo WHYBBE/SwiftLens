@@ -10,11 +10,14 @@ struct DetailView: View {
     @State private var quarantineRemoved: Bool = false
     @State private var removeError: String?
 
-    /// 顶部三个状态对应的目标位置锚点。
+    /// 顶部状态对应的目标位置锚点。
     enum DetailAnchor: Hashable {
-        case codeSign
-        case quarantine
         case architectures
+        case quarantine
+        case codeSign
+        case privacy
+        case ats
+        case subBundles
     }
 
     var body: some View {
@@ -28,11 +31,18 @@ struct DetailView: View {
                         .id(DetailAnchor.architectures)
                     documentTypesSection
                     urlSchemesSection
+                    privacySection
+                        .id(DetailAnchor.privacy)
+                    atsSection
+                        .id(DetailAnchor.ats)
                     quarantineSection
                         .id(DetailAnchor.quarantine)
+                    xattrsSection
                     codeSignSection
                         .id(DetailAnchor.codeSign)
                     entitlementsSection
+                    subBundlesSection
+                        .id(DetailAnchor.subBundles)
                     fileSection
                     rawPlistSection
                     rawCodesignSection
@@ -106,7 +116,7 @@ struct DetailView: View {
                 .buttonStyle(.plain)
                 .help("跳转到「Quarantine」分区")
 
-                // 签名状态 + 有效性，同一行，两个都跳转到代码签名分区
+                // 签名状态 + 有效性 + 公证，同一行，三个都跳转到代码签名分区
                 HStack(spacing: 6) {
                     Button {
                         withAnimation { proxy.scrollTo(DetailAnchor.codeSign, anchor: .top) }
@@ -125,6 +135,15 @@ struct DetailView: View {
                     }
                     .buttonStyle(.plain)
                     .help("跳转到「代码签名」分区")
+
+                    Button {
+                        withAnimation { proxy.scrollTo(DetailAnchor.codeSign, anchor: .top) }
+                    } label: {
+                        Badge(text: info.codeSign.notarization.rawValue,
+                              color: notarizationColor(info.codeSign.notarization))
+                    }
+                    .buttonStyle(.plain)
+                    .help("跳转到「代码签名」分区")
                 }
             }
         }
@@ -140,11 +159,19 @@ struct DetailView: View {
             RowView(key: "CFBundleIdentifier", value: info.bundleIdentifier ?? "—")
             RowView(key: "CFBundleShortVersionString", value: info.bundleShortVersion ?? "—")
             RowView(key: "CFBundleVersion", value: info.bundleVersion ?? "—")
+            if let v = info.longVersionString { RowView(key: "CFBundleLongVersionString", value: v) }
+            if let v = info.getInfoString { RowView(key: "CFBundleGetInfoString", value: v) }
+            if let v = info.bundleSignature { RowView(key: "CFBundleSignature", value: v) }
             RowView(key: "CFBundleExecutable", value: info.executableName ?? "—")
             RowView(key: "可执行文件路径", value: info.executablePath ?? "—")
             RowView(key: "CFBundlePackageType", value: info.bundlePackageType ?? "—")
             RowView(key: "CFBundleInfoDictionaryVersion", value: info.infoDictionaryVersion ?? "—")
             RowView(key: "CFBundleDevelopmentRegion", value: info.developmentRegion ?? "—")
+            if let v = info.principalClass { RowView(key: "NSPrincipalClass", value: v) }
+            if let v = info.humanReadableCopyright { RowView(key: "NSHumanReadableCopyright", value: v) }
+            if !info.supportedPlatforms.isEmpty {
+                RowView(key: "CFBundleSupportedPlatforms", value: info.supportedPlatforms.joined(separator: ", "))
+            }
         }
     }
 
@@ -157,13 +184,34 @@ struct DetailView: View {
             RowView(key: "NSHighResolutionCapable", value: bool(info.highResolutionCapable))
             RowView(key: "NSSupportsHighResolutionDisplays", value: bool(info.supportsHighResolutionDisplays))
             RowView(key: "NSCanAnimateAlpha", value: bool(info.canAnimateAlpha))
+            RowView(key: "NSSupportsAutomaticGraphicsSwitching", value: bool(info.supportsAutomaticGraphicsSwitching))
+            RowView(key: "NSQuitAlwaysKeepsWindows", value: bool(info.quitAlwaysKeepsWindows))
+            RowView(key: "NSPrefersDisplaySafeAreaCompatibilityMode", value: bool(info.prefersDisplaySafeAreaCompatibilityMode))
             RowView(key: "LSBackgroundOnly", value: bool(info.requiresBackgroundGesture))
+            RowView(key: "CSResourcesFileMapped", value: bool(info.csResourcesFileMapped))
             RowView(key: "CFBundleUses24HourClock", value: bool(info.uses24HourClock))
+            if !info.lsEnvironment.isEmpty {
+                Divider().padding(.vertical, 2)
+                Text("LSEnvironment")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                ForEach(info.lsEnvironment.keys.sorted(), id: \.self) { k in
+                    RowView(key: k, value: info.lsEnvironment[k] ?? "—")
+                }
+            }
+            Divider().padding(.vertical, 2)
+            Text("构建工具链")
+                .font(.caption)
+                .foregroundStyle(.secondary)
             RowView(key: "DTSDKName", value: info.sdkVersion ?? "—")
             RowView(key: "DTPlatformName", value: info.platformName ?? "—")
+            RowView(key: "DTPlatformVersion", value: info.platformVersion ?? "—")
             RowView(key: "DTSDKBuild", value: info.sdkBuild ?? "—")
             RowView(key: "DTPlatformBuild", value: info.platformBuild ?? "—")
+            RowView(key: "DTXcode", value: info.xcodeVersion ?? "—")
             RowView(key: "DTXcodeBuild", value: info.xcodeBuild ?? "—")
+            RowView(key: "DTCompiler", value: info.dtCompiler ?? "—")
+            RowView(key: "BuildMachineOSBuild", value: info.buildMachineOSBuild ?? "—")
         }
     }
 
@@ -233,6 +281,97 @@ struct DetailView: View {
         }
     }
 
+    // MARK: 隐私 / TCC 权限描述
+    private var privacySection: some View {
+        SectionView(
+            "隐私权限描述 (TCC Usage Descriptions)",
+            subtitle: "\(info.privacyEntries.count) 项"
+        ) {
+            if info.privacyEntries.isEmpty {
+                PlaceholderRow(text: "未声明任何 NS***UsageDescription 权限描述")
+            } else {
+                ForEach(info.privacyEntries) { e in
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 8) {
+                            Image(systemName: e.systemImage)
+                                .font(.title3)
+                                .foregroundStyle(.tint)
+                                .frame(width: 24)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(e.displayTitle).font(.body.bold())
+                                Text(e.key)
+                                    .font(.system(.caption2, design: .monospaced))
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                        }
+                        if !e.description.isEmpty {
+                            Text(e.description)
+                                .font(.system(.callout, design: .default))
+                                .foregroundStyle(.primary)
+                                .padding(.leading, 32)
+                                .textSelection(.enabled)
+                        }
+                    }
+                    .padding(8)
+                    .background(RoundedRectangle(cornerRadius: 6).fill(.quaternary.opacity(0.3)))
+                }
+            }
+        }
+    }
+
+    // MARK: 网络安全 ATS · Electron
+    private var atsSection: some View {
+        let ats = info.appTransportSecurity
+        let asar = info.electronAsarIntegrity
+        return SectionView(
+            "网络安全 / ATS · Electron",
+            subtitle: (ats == nil && asar == nil) ? "无" :
+                [ats != nil ? "ATS" : nil, asar != nil ? "Asar" : nil]
+                    .compactMap { $0 }.joined(separator: ", ")
+        ) {
+            if let ats = ats {
+                Text("NSAppTransportSecurity")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                ForEach(InfoPlistParser.flatten(ats).sorted { $0.0 < $1.0 }, id: \.0) { row in
+                    RowView(key: row.0, value: row.1)
+                }
+            }
+            if let asar = asar {
+                if ats != nil { Divider().padding(.vertical, 4) }
+                Text("ElectronAsarIntegrity")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                ForEach(InfoPlistParser.flatten(asar).sorted { $0.0 < $1.0 }, id: \.0) { row in
+                    RowView(key: row.0, value: row.1)
+                }
+            }
+            if ats == nil && asar == nil {
+                PlaceholderRow(text: "未声明 NSAppTransportSecurity / ElectronAsarIntegrity")
+            }
+        }
+    }
+
+    // MARK: 扩展属性全列表
+    private var xattrsSection: some View {
+        SectionView(
+            "扩展属性 (xattrs)",
+            subtitle: "\(info.extendedXattrs.names.count) 项"
+        ) {
+            if info.extendedXattrs.names.isEmpty {
+                PlaceholderRow(text: "无任何扩展属性")
+            } else {
+                ForEach(info.extendedXattrs.names, id: \.self) { name in
+                    RowView(
+                        key: name,
+                        value: info.extendedXattrs.descriptions[name] ?? "<空>"
+                    )
+                }
+            }
+        }
+    }
+
     // MARK: Quarantine
     private var quarantineSection: some View {
         let q = quarantineRemoved ? nil : info.quarantine
@@ -291,14 +430,43 @@ struct DetailView: View {
         return SectionView("代码签名 (Code Signing)") {
             RowView(key: "签名状态", value: cs.state.rawValue)
             RowView(key: "有效性", value: cs.validity.rawValue)
+            RowView(key: "公证 (Notarization)", value: cs.notarization.rawValue)
+            if let v = cs.format { RowView(key: "Format", value: v) }
             if let v = cs.identifier { RowView(key: "Identifier", value: v) }
             if let v = cs.teamIdentifier { RowView(key: "TeamIdentifier", value: v) }
-            if let v = cs.cdHash { RowView(key: "CDHash", value: v) }
-            if let v = cs.hashType { RowView(key: "Hash type", value: v) }
             if let v = cs.signatureType { RowView(key: "Signature", value: v) }
-            if let v = cs.flags { RowView(key: "flags", value: v) }
-            if let v = cs.codeDirectoryVersion { RowView(key: "CodeDirectory v", value: v) }
+            if let v = cs.runtimeVersion { RowView(key: "Runtime Version", value: v) }
+
+            if let v = cs.codeDirectoryVersion {
+                RowView(key: "CodeDirectory v", value: v)
+            }
+            if let v = cs.codeDirectorySize { RowView(key: "CodeDirectory size", value: v) }
+            if let v = cs.codeDirectoryHashes { RowView(key: "CodeDirectory hashes", value: v) }
+            if let v = cs.flags { RowView(key: "flags (原始)", value: v) }
+            if !cs.decodedFlags.isEmpty {
+                RowView(key: "flags (解码)", value: cs.decodedFlags.joined(separator: ", "))
+            }
+
+            if let v = cs.cdHash { RowView(key: "CDHash", value: v) }
+            if let v = cs.candidateCDHash { RowView(key: "CandidateCDHash", value: v) }
+            if let v = cs.candidateCDHashFull { RowView(key: "CandidateCDHashFull", value: v) }
+            if let v = cs.hashType { RowView(key: "Hash type", value: v) }
+            if let v = cs.hashChoices { RowView(key: "Hash choices", value: v) }
+            if let v = cs.cmsDigest { RowView(key: "CMSDigest", value: v) }
+            if let v = cs.cmsDigestType { RowView(key: "CMSDigestType", value: v) }
+
+            if let v = cs.sealedResourcesVersion {
+                RowView(key: "Sealed Resources version", value: v)
+            }
+            if let v = cs.sealedResourcesRules { RowView(key: "Sealed rules", value: v) }
+            if let v = cs.sealedResourcesFiles { RowView(key: "Sealed files", value: v) }
+            if let v = cs.internalRequirements { RowView(key: "Internal requirements", value: v) }
+            if let v = cs.infoPlistEntries { RowView(key: "Info.plist entries", value: v) }
+            if let v = cs.totalSignatures { RowView(key: "Total signatures", value: v) }
+            if let v = cs.chosenSignature { RowView(key: "Chosen signature", value: v) }
+
             if !cs.authorities.isEmpty {
+                Divider().padding(.vertical, 4)
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Authority 链")
                         .font(.caption)
@@ -344,6 +512,55 @@ struct DetailView: View {
             RowView(key: "修改时间", value: info.modificationDate.map { iso($0) } ?? "—")
             RowView(key: "创建时间", value: info.creationDate.map { iso($0) } ?? "—")
             RowView(key: "权限 (octal)", value: info.permissions ?? "—")
+        }
+    }
+
+    // MARK: 子 bundle (Frameworks / Helpers / XPC / PlugIns)
+    private var subBundlesSection: some View {
+        SectionView(
+            "内嵌子 bundle",
+            subtitle: "\(info.subBundles.count) 项 · \(formattedSize(info.subBundlesTotalSize))"
+        ) {
+            if info.subBundles.isEmpty {
+                PlaceholderRow(text: "未发现内嵌 Framework / Helper / XPC / PlugIns / LoginItems")
+            } else {
+                ForEach(Array(info.subBundles.enumerated()), id: \.element.id) { i, sub in
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 8) {
+                            Image(systemName: subBundleIcon(for: sub.kind))
+                                .foregroundStyle(.tint)
+                                .frame(width: 20)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(sub.relativePath)
+                                    .font(.system(.body, design: .monospaced).bold())
+                                if let bid = sub.bundleIdentifier {
+                                    Text(bid)
+                                        .font(.system(.caption2, design: .monospaced))
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            Spacer()
+                            Badge(text: sub.signatureState.rawValue,
+                                  color: badgeColor(for: sub.signatureState))
+                        }
+                        if let ver = sub.bundleVersion {
+                            RowView(key: "版本", value: ver)
+                        }
+                        if let exec = sub.executableName {
+                            RowView(key: "CFBundleExecutable", value: exec)
+                        }
+                        if let sig = sub.signatureType {
+                            RowView(key: "Signature", value: sig)
+                        }
+                        if let runtime = sub.runtimeVersion {
+                            RowView(key: "Runtime Version", value: runtime)
+                        }
+                    }
+                    .padding(8)
+                    .background(RoundedRectangle(cornerRadius: 6).fill(.quaternary.opacity(0.3)))
+                    if i < info.subBundles.count - 1 { Spacer().frame(height: 4) }
+                }
+            }
         }
     }
 
@@ -413,6 +630,26 @@ struct DetailView: View {
         }
     }
 
+    private func notarizationColor(_ n: CodeSignInfo.Notarization) -> Color {
+        switch n {
+        case .notarized:    return .green
+        case .notNotarized: return .gray
+        case .unknown:      return .gray
+        }
+    }
+
+    private func subBundleIcon(for kind: SubBundle.Kind) -> String {
+        switch kind {
+        case .framework: return "shippingbox"
+        case .app:       return "app.gift"
+        case .xpc:       return "antenna.radiowaves.left.and.right"
+        case .kext:      return "externaldrive"
+        case .plugin:    return "puzzlepiece.extension"
+        case .loginItem: return "power"
+        case .other:     return "shippingbox.fill"
+        }
+    }
+
     private func summaryString() -> String {
         var lines: [String] = []
         lines.append("# \(info.displayName ?? info.bundleName ?? info.bundleURL.lastPathComponent)")
@@ -422,12 +659,49 @@ struct DetailView: View {
         lines.append("最低系统版本: \(info.minimumOSVersion ?? "—")")
         let archs = info.architectures.map { $0.name }.joined(separator: ", ")
         lines.append("架构: \(archs.isEmpty ? "—" : archs)")
-        lines.append("签名: \(info.codeSign.state.rawValue) — \(info.codeSign.validity.rawValue)")
-        if let id = info.codeSign.identifier { lines.append("Identifier: \(id)") }
-        if let team = info.codeSign.teamIdentifier { lines.append("TeamIdentifier: \(team)") }
-        if let cdh = info.codeSign.cdHash { lines.append("CDHash: \(cdh)") }
+        if !info.supportedPlatforms.isEmpty {
+            lines.append("支持平台: \(info.supportedPlatforms.joined(separator: ", "))")
+        }
+        if let v = info.principalClass { lines.append("NSPrincipalClass: \(v)") }
+        if let v = info.humanReadableCopyright { lines.append("版权: \(v)") }
+        let cs = info.codeSign
+        lines.append("签名: \(cs.state.rawValue) — \(cs.validity.rawValue) — \(cs.notarization.rawValue)")
+        if let v = cs.format { lines.append("Format: \(v)") }
+        if let id = cs.identifier { lines.append("Identifier: \(id)") }
+        if let team = cs.teamIdentifier { lines.append("TeamIdentifier: \(team)") }
+        if let cdh = cs.cdHash { lines.append("CDHash: \(cdh)") }
+        if !cs.decodedFlags.isEmpty { lines.append("签名 flags: \(cs.decodedFlags.joined(separator: ", "))") }
+        if let v = cs.runtimeVersion { lines.append("Runtime Version: \(v)") }
+        if !cs.authorities.isEmpty {
+            lines.append("Authority:")
+            cs.authorities.forEach { lines.append("  - \($0)") }
+        }
+        lines.append("隐私权限描述: \(info.privacyEntries.count) 项")
+        if !info.privacyEntries.isEmpty {
+            for e in info.privacyEntries.prefix(10) {
+                lines.append("  · \(e.displayTitle) [\(e.key)]: \(e.description)")
+            }
+            if info.privacyEntries.count > 10 {
+                lines.append("  ... 另外 \(info.privacyEntries.count - 10) 项")
+            }
+        }
+        if info.appTransportSecurity != nil { lines.append("ATS: 已声明 NSAppTransportSecurity") }
+        if info.electronAsarIntegrity != nil { lines.append("Electron: 已声明 ElectronAsarIntegrity") }
         if let q = info.quarantine { lines.append("Quarantine: flags=\(q.flags) agent=\(q.agent) 时间=\(q.timestampString)") }
         else { lines.append("Quarantine: 无") }
+        if !info.extendedXattrs.names.isEmpty {
+            lines.append("扩展属性: \(info.extendedXattrs.names.joined(separator: ", "))")
+        }
+        lines.append("子 bundle: \(info.subBundles.count) 项 (\(formattedSize(info.subBundlesTotalSize)))")
+        if !info.subBundles.isEmpty {
+            for sub in info.subBundles.prefix(10) {
+                lines.append("  · [\(sub.kind.rawValue)] \(sub.relativePath) — \(sub.bundleIdentifier ?? "—")")
+            }
+            if info.subBundles.count > 10 {
+                lines.append("  ... 另外 \(info.subBundles.count - 10) 项")
+            }
+        }
+        lines.append("文件大小: \(info.formattedFileSize()) (\(info.fileSize) 字节)")
         return lines.joined(separator: "\n")
     }
 }

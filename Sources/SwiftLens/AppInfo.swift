@@ -31,11 +31,32 @@ struct AppInfo {
     let uses24HourClock: Bool?
 
     // 链接 / 部署
-    let sdkVersion: String?   // DTSDKName / DTSDKName + DTPlatformName + DTSDKBuild
+    let sdkVersion: String?   // DTSDKName
     let platformName: String?
+    let platformVersion: String?    // DTPlatformVersion
     let sdkBuild: String?
     let platformBuild: String?
-    let xcodeBuild: String?
+    let xcodeVersion: String?       // DTXcode
+    let xcodeBuild: String?         // DTXcodeBuild
+    let buildMachineOSBuild: String? // BuildMachineOSBuild
+    let dtCompiler: String?         // DTCompiler
+
+    // 其它 Info.plist 文本性元数据
+    let principalClass: String?    // NSPrincipalClass
+    let humanReadableCopyright: String?  // NSHumanReadableCopyright
+    let longVersionString: String?  // CFBundleLongVersionString
+    let getInfoString: String?     // CFBundleGetInfoString
+    let bundleSignature: String?    // CFBundleSignature
+    let supportedPlatforms: [String]  // CFBundleSupportedPlatforms
+
+    // 其它 Info.plist 布尔/字典
+    let supportsAutomaticGraphicsSwitching: Bool?
+    let quitAlwaysKeepsWindows: Bool?
+    let prefersDisplaySafeAreaCompatibilityMode: Bool?
+    let csResourcesFileMapped: Bool?
+    let lsEnvironment: [String: String]
+    let appTransportSecurity: [String: Any]?   // NSAppTransportSecurity
+    let electronAsarIntegrity: [String: Any]?   // ElectronAsarIntegrity
 
     // 文档 / URL
     let documentTypes: [[String: Any]]
@@ -47,6 +68,7 @@ struct AppInfo {
     // 权限 / 沙盒
     let hasDockIcon: Bool?
     let documentControllerEnabled: Bool?
+    let privacyEntries: [PrivacyEntry]   // NS***UsageDescription
 
     // 文件系统
     let fileSize: UInt64
@@ -60,12 +82,17 @@ struct AppInfo {
 
     // 扩展属性 / 隔离
     let quarantine: QuarantineInfo?
+    let extendedXattrs: ExtendedXattrInfo
 
     // 代码签名
     let codeSign: CodeSignInfo
 
     // 架构
     let architectures: [ArchitectureReader.ArchInfo]
+
+    // 子 bundle
+    let subBundles: [SubBundle]
+    let subBundlesTotalSize: UInt64
 
     // 图标
     let icon: NSImage?
@@ -123,6 +150,26 @@ enum AppInfoLoader {
             }
         }
 
+        // CFBundleSupportedPlatforms
+        let supportedPlatforms: [String] = (rawPlist["CFBundleSupportedPlatforms"] as? [String]) ?? []
+
+        // LSEnvironment -> [String: String]
+        var lsEnv: [String: String] = [:]
+        if let env = rawPlist["LSEnvironment"] as? [String: Any] {
+            for (k, v) in env {
+                lsEnv[k] = (v as? String) ?? InfoPlistParser.describe(v)
+            }
+        }
+
+        // 子 bundle 扫描
+        let subResult = SubBundleScanner.scan(parent: url)
+
+        // 隐私权限条目
+        let privacyEntries = PrivacyReader.parse(from: rawPlist)
+
+        // 扩展属性全列表
+        let extendedXattrs = ExtendedXattrReader.read(for: url)
+
         // 图标
         var icon: NSImage?
         let iconURL = url.appendingPathComponent("Contents/Resources/\(str("CFBundleIconFile") ?? "AppIcon")")
@@ -155,9 +202,26 @@ enum AppInfoLoader {
             uses24HourClock: (rawPlist["CFBundleUses24HourClock"] as? Bool),
             sdkVersion: str("DTSDKName"),
             platformName: str("DTPlatformName"),
+            platformVersion: str("DTPlatformVersion"),
             sdkBuild: str("DTSDKBuild"),
             platformBuild: str("DTPlatformBuild"),
+            xcodeVersion: str("DTXcode"),
             xcodeBuild: str("DTXcodeBuild"),
+            buildMachineOSBuild: str("BuildMachineOSBuild"),
+            dtCompiler: str("DTCompiler"),
+            principalClass: str("NSPrincipalClass"),
+            humanReadableCopyright: str("NSHumanReadableCopyright"),
+            longVersionString: str("CFBundleLongVersionString"),
+            getInfoString: str("CFBundleGetInfoString"),
+            bundleSignature: str("CFBundleSignature"),
+            supportedPlatforms: supportedPlatforms,
+            supportsAutomaticGraphicsSwitching: (rawPlist["NSSupportsAutomaticGraphicsSwitching"] as? Bool),
+            quitAlwaysKeepsWindows: (rawPlist["NSQuitAlwaysKeepsWindows"] as? Bool),
+            prefersDisplaySafeAreaCompatibilityMode: (rawPlist["NSPrefersDisplaySafeAreaCompatibilityMode"] as? Bool),
+            csResourcesFileMapped: (rawPlist["CSResourcesFileMapped"] as? Bool),
+            lsEnvironment: lsEnv,
+            appTransportSecurity: rawPlist["NSAppTransportSecurity"] as? [String: Any],
+            electronAsarIntegrity: rawPlist["ElectronAsarIntegrity"] as? [String: Any],
             documentTypes: dict("CFBundleDocumentTypes"),
             urlSchemes: schemes,
             exportedTypeIdentifiers: dict("UTExportedTypeDeclarations"),
@@ -165,6 +229,7 @@ enum AppInfoLoader {
             services: dict("NSServices"),
             hasDockIcon: (rawPlist["LSUIElement"] as? Bool) == false ? true : nil,
             documentControllerEnabled: (rawPlist["NSMainNibFile"] != nil),
+            privacyEntries: privacyEntries,
             fileSize: fileSize,
             modificationDate: modDate,
             creationDate: creationDate,
@@ -172,8 +237,11 @@ enum AppInfoLoader {
             rawInfoPlist: rawPlist,
             flatRows: rows,
             quarantine: QuarantineReader.read(for: url),
+            extendedXattrs: extendedXattrs,
             codeSign: CodeSignReader.read(for: url),
             architectures: ArchitectureReader.read(for: url),
+            subBundles: subResult.subBundles,
+            subBundlesTotalSize: subResult.totalSize,
             icon: icon
         )
     }
