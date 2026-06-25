@@ -259,22 +259,42 @@ struct DetailView: View {
     }
 
     // MARK: 文档类型
+    /// 数量超过该阈值时启用固定高度内嵌滚动，避免单一分区把整页拉得太长。
+    private static let documentTypesCollapsableThreshold = 6
+
     private var documentTypesSection: some View {
         SectionView("文档类型 (CFBundleDocumentTypes)", subtitle: "\(info.documentTypes.count) 项") {
             if info.documentTypes.isEmpty {
                 PlaceholderRow(text: "未声明自定义文档类型")
             } else {
-                ForEach(Array(info.documentTypes.enumerated()), id: \.offset) { i, doc in
-                    VStack(alignment: .leading, spacing: 4) {
-                        RowView(key: "名称", value: (doc["CFBundleTypeName"] as? String) ?? "—")
-                        RowView(key: "角色", value: (doc["CFBundleTypeRole"] as? String) ?? "—")
-                        RowView(key: "图标", value: (doc["CFBundleTypeIconFile"] as? String) ?? "—")
-                        RowView(key: "LSItemContentTypes",
-                                value: (doc["LSItemContentTypes"] as? [String] ?? []).joined(separator: ", "))
-                        RowView(key: "LSHandlerRank", value: (doc["LSHandlerRank"] as? String) ?? "—")
+                // 数量较多：固定高度 + 提示 + 内嵌滚动
+                let bodyContent = VStack(alignment: .leading, spacing: 8) {
+                    ForEach(Array(info.documentTypes.enumerated()), id: \.offset) { _, doc in
+                        DocumentTypeRowView(doc: doc)
                     }
-                    .padding(.vertical, 4)
-                    if i < info.documentTypes.count - 1 { Divider() }
+                }
+
+                if info.documentTypes.count > Self.documentTypesCollapsableThreshold {
+                    HStack {
+                        Text("\(info.documentTypes.count) 项文档类型")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text("可滚动")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .background(Capsule().strokeBorder(.tertiary.opacity(0.5)))
+                    }
+                    .padding(.bottom, 4)
+
+                    ScrollView {
+                        bodyContent
+                    }
+                    .frame(maxHeight: 280)
+                    .background(RoundedRectangle(cornerRadius: 6).fill(.quaternary.opacity(0.2)))
+                } else {
+                    bodyContent
                 }
             }
             if !info.exportedTypeIdentifiers.isEmpty || !info.importedTypeIdentifiers.isEmpty {
@@ -1067,5 +1087,101 @@ struct Badge: View {
             .background(Capsule().fill(color.opacity(0.25)))
             .overlay(Capsule().stroke(color.opacity(0.6), lineWidth: 1))
             .foregroundStyle(color)
+    }
+}
+
+// MARK: - DocumentTypeRowView
+/// 单个文档类型的卡片列表项：类型名 + 角色 badge，下面更小字号显示子信息。
+struct DocumentTypeRowView: View {
+    let doc: [String: Any]
+
+    private var name: String   { (doc["CFBundleTypeName"] as? String) ?? "—" }
+    private var role: String?  { doc["CFBundleTypeRole"] as? String }
+    private var icon: String?  { doc["CFBundleTypeIconFile"] as? String }
+    private var rank: String?  { doc["LSHandlerRank"] as? String }
+    private var contentTypes: [String] {
+        (doc["LSItemContentTypes"] as? [String])
+            ?? (doc["LSItemContentTypes"] as? [Any]).map { $0.map { InfoPlistParser.describe($0) } }
+            ?? []
+    }
+    private var extensions: [String] {
+        (doc["CFBundleTypeExtensions"] as? [String]) ?? []
+    }
+
+    private func roleColor(_ r: String) -> Color {
+        switch r.lowercased() {
+        case "editor":    return .blue
+        case "viewer":    return .gray
+        case "shell":     return .purple
+        case "qlgenerator","generator": return .indigo
+        case "none":      return .secondary
+        default:          return .orange
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            // 头部行：文档图标 + 名称 + 角色 badge
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Image(systemName: icon.map { _ in "doc.richtext" } ?? "doc.text")
+                    .foregroundStyle(.tint)
+                    .font(.body)
+                Text(name)
+                    .font(.system(.body, design: .default).bold())
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                if let r = role {
+                    Spacer()
+                    Text(r)
+                        .font(.caption2.bold())
+                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .background(Capsule().fill(roleColor(r).opacity(0.2)))
+                        .foregroundStyle(roleColor(r))
+                }
+            }
+
+            // 子信息行 —— 用更小字号、灰色调表达
+            VStack(alignment: .leading, spacing: 3) {
+                if !extensions.isEmpty {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text("扩展名").font(.caption).foregroundStyle(.tertiary)
+                            .frame(width: 70, alignment: .leading)
+                        Text(extensions.map { ".\($0)" }.joined(separator: "  "))
+                            .font(.system(.caption, design: .monospaced))
+                            .textSelection(.enabled)
+                    }
+                }
+                if !contentTypes.isEmpty {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text("UTIs").font(.caption).foregroundStyle(.tertiary)
+                            .frame(width: 70, alignment: .leading)
+                        Text(contentTypes.joined(separator: ", "))
+                            .font(.system(.caption, design: .monospaced))
+                            .textSelection(.enabled)
+                            .lineLimit(2)
+                    }
+                }
+                if let rank = rank {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text("优先级").font(.caption).foregroundStyle(.tertiary)
+                            .frame(width: 70, alignment: .leading)
+                        Text(rank)
+                            .font(.system(.caption, design: .monospaced))
+                    }
+                }
+                if let icon = icon {
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text("图标文件").font(.caption).foregroundStyle(.tertiary)
+                            .frame(width: 70, alignment: .leading)
+                        Text(icon)
+                            .font(.system(.caption, design: .monospaced))
+                            .textSelection(.enabled)
+                    }
+                }
+            }
+            .padding(.leading, 24)
+        }
+        .padding(8)
+        .background(RoundedRectangle(cornerRadius: 6).fill(.quaternary.opacity(0.25)))
     }
 }
