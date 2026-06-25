@@ -48,6 +48,10 @@ struct DetailView: View {
                     iCloudSection
                     notificationsSection
                     behaviorsSection
+                    localizationSection
+                    iosPortSection
+                    buildMetadataSection
+                    bonjourSection
                     fileSection
                     rawPlistSection
                     rawCodesignSection
@@ -767,6 +771,121 @@ struct DetailView: View {
         }
     }
 
+    // MARK: 帮助 / 本地化 / Accent / Spotlight
+    private var localizationSection: some View {
+        let ex = info.extra
+        let any = (ex.helpBookName != nil || ex.helpBookFolder != nil
+                   || !ex.bundleLocalizations.isEmpty
+                   || ex.allowMixedLocalizations != nil
+                   || ex.accentColorName != nil || ex.mdItemKeywords != nil)
+        return SectionView("帮助 / 本地化 / Accent / Spotlight",
+                           subtitle: any ? nil : "无") {
+            if !any {
+                PlaceholderRow(text: "未声明帮助/本地化/Accent/Spotlight 关键词")
+            } else {
+                if let v = ex.helpBookName { RowView(key: "CFBundleHelpBookName", value: v) }
+                if let v = ex.helpBookFolder { RowView(key: "CFBundleHelpBookFolder", value: v) }
+                if !ex.bundleLocalizations.isEmpty {
+                    RowView(key: "CFBundleLocalizations",
+                            value: ex.bundleLocalizations.joined(separator: ", "))
+                }
+                if let v = ex.allowMixedLocalizations {
+                    RowView(key: "CFBundleAllowMixedLocalizations", value: bool(v))
+                }
+                if let v = ex.accentColorName { RowView(key: "NSAccentColorName", value: v) }
+                if let v = ex.mdItemKeywords { RowView(key: "MDItemKeywords (Spotlight)", value: v) }
+            }
+        }
+    }
+
+    // MARK: iOS 移植包字段
+    private var iosPortSection: some View {
+        let ex = info.extra
+        let any = (!ex.uIDeviceFamily.isEmpty || ex.uiLaunchStoryboardName != nil
+                   || ex.uiRequiresFullScreen != nil
+                   || !ex.uiSupportedInterfaceOrientations.isEmpty
+                   || ex.uiStatusBarStyle != nil
+                   || !ex.uiBackgroundModes.isEmpty)
+        return SectionView("iOS 移植包字段 (UI* 键)",
+                           subtitle: any ? (info.isIOSPort ? "已识别为 iOS 移植包" : "部分键存在") : "无") {
+            if !any {
+                PlaceholderRow(text: "未声明 iOS 移植字段")
+            } else {
+                if !ex.uIDeviceFamily.isEmpty {
+                    let labels: [Int: String] = [1: "iPhone", 2: "iPad", 3: "Apple TV", 4: "Apple Watch"]
+                    RowView(key: "UIDeviceFamily",
+                            value: ex.uIDeviceFamily.map { labels[$0] ?? "\($0)" }.joined(separator: ", "))
+                }
+                if let v = ex.uiLaunchStoryboardName {
+                    RowView(key: "UILaunchStoryboardName", value: v)
+                }
+                if let v = ex.uiRequiresFullScreen {
+                    RowView(key: "UIRequiresFullScreen", value: bool(v))
+                }
+                if !ex.uiSupportedInterfaceOrientations.isEmpty {
+                    RowView(key: "UISupportedInterfaceOrientations",
+                            value: ex.uiSupportedInterfaceOrientations.joined(separator: ", "))
+                }
+                if let v = ex.uiStatusBarStyle {
+                    RowView(key: "UIStatusBarStyle", value: v)
+                }
+                if !ex.uiBackgroundModes.isEmpty {
+                    RowView(key: "UIBackgroundModes",
+                            value: ex.uiBackgroundModes.joined(separator: ", "))
+                }
+            }
+        }
+    }
+
+    // MARK: Electron / 构建元数据 / 厂商
+    private var buildMetadataSection: some View {
+        let ex = info.extra
+        let any = (ex.electronTeamID != nil || ex.sourceVersion != nil
+                   || ex.requiredBuildHash != nil || ex.scmRevision != nil
+                   || ex.appIdentifierPrefix != nil || ex.teamIdentifierPlist != nil
+                   || ex.bundleSpokenName != nil || ex.vendorCode != nil
+                   || ex.organizationIdentifier != nil
+                   || ex.ctFontSuppressAutoDownload != nil
+                   || ex.asWebAuthenticationSessionWebBrowserSupportCapabilities != nil)
+        return SectionView("Electron / 构建元数据 / 厂商",
+                           subtitle: any ? nil : "无") {
+            if !any {
+                PlaceholderRow(text: "未声明 Electron/厂商/构建元数据")
+            } else {
+                if let v = ex.electronTeamID { RowView(key: "ElectronTeamID", value: v) }
+                if let v = ex.sourceVersion { RowView(key: "SourceVersion", value: v) }
+                if let v = ex.requiredBuildHash { RowView(key: "requiredBuildHash", value: v) }
+                if let v = ex.scmRevision { RowView(key: "SCMRevision", value: v) }
+                if let v = ex.appIdentifierPrefix { RowView(key: "AppIdentifierPrefix", value: v) }
+                if let v = ex.teamIdentifierPlist { RowView(key: "TeamIdentifier (plist)", value: v) }
+                if let v = ex.bundleSpokenName { RowView(key: "CFBundleSpokenName", value: v) }
+                if let v = ex.vendorCode { RowView(key: "VendorCode", value: v) }
+                if let v = ex.organizationIdentifier { RowView(key: "OrganizationIdentifier", value: v) }
+                if let v = ex.ctFontSuppressAutoDownload {
+                    RowView(key: "CTFontSuppressAutoDownload", value: bool(v))
+                }
+                if let v = ex.asWebAuthenticationSessionWebBrowserSupportCapabilities {
+                    RowView(key: "ASWebAuthenticationSessionWebBrowserSupportCapabilities", value: bool(v))
+                }
+            }
+        }
+    }
+
+    // MARK: Bonjour 服务发现
+    private var bonjourSection: some View {
+        let ex = info.extra
+        return SectionView("Bonjour 服务发现 (NSBonjourServices)",
+                           subtitle: ex.bonjourServices.isEmpty ? "无" : "\(ex.bonjourServices.count) 项") {
+            if ex.bonjourServices.isEmpty {
+                PlaceholderRow(text: "未声明 NSBonjourServices")
+            } else {
+                ForEach(ex.bonjourServices, id: \.self) { s in
+                    RowView(key: s, value: "_\(s)._tcp")
+                }
+            }
+        }
+    }
+
     // MARK: helpers
     private func bool(_ v: Bool?) -> String {
         switch v {
@@ -893,6 +1012,29 @@ struct DetailView: View {
         if let v = ex.lsFileQuarantineEnabled { lines.append("LSFileQuarantineEnabled: \(v)") }
         if let v = ex.gpuEjectPolicy { lines.append("GPUEjectPolicy: \(v)") }
         if let v = ex.gpuSelectionPolicy { lines.append("GPUSelectionPolicy: \(v)") }
+        // F-I 新分区
+        if let v = ex.helpBookName { lines.append("CFBundleHelpBookName: \(v)") }
+        if let v = ex.helpBookFolder { lines.append("CFBundleHelpBookFolder: \(v)") }
+        if !ex.bundleLocalizations.isEmpty {
+            lines.append("CFBundleLocalizations: \(ex.bundleLocalizations.joined(separator: ", "))")
+        }
+        if let v = ex.accentColorName { lines.append("NSAccentColorName: \(v)") }
+        if let v = ex.mdItemKeywords { lines.append("MDItemKeywords: \(v)") }
+        if !ex.uIDeviceFamily.isEmpty {
+            let labels: [Int: String] = [1: "iPhone", 2: "iPad", 3: "Apple TV", 4: "Apple Watch"]
+            lines.append("UIDeviceFamily: \(ex.uIDeviceFamily.map { labels[$0] ?? "\($0)" }.joined(separator: ", "))")
+        }
+        if let v = ex.uiLaunchStoryboardName { lines.append("UILaunchStoryboardName: \(v)") }
+        if !ex.uiBackgroundModes.isEmpty {
+            lines.append("UIBackgroundModes: \(ex.uiBackgroundModes.joined(separator: ", "))")
+        }
+        if let v = ex.electronTeamID { lines.append("ElectronTeamID: \(v)") }
+        if let v = ex.scmRevision { lines.append("SCMRevision: \(v)") }
+        if let v = ex.requiredBuildHash { lines.append("requiredBuildHash: \(v)") }
+        if let v = ex.bundleSpokenName { lines.append("CFBundleSpokenName: \(v)") }
+        if !ex.bonjourServices.isEmpty {
+            lines.append("NSBonjourServices: \(ex.bonjourServices.joined(separator: ", "))")
+        }
         if let q = info.quarantine { lines.append("Quarantine: flags=\(q.flags) agent=\(q.agent) 时间=\(q.timestampString)") }
         else { lines.append("Quarantine: 无") }
         if !info.extendedXattrs.names.isEmpty {

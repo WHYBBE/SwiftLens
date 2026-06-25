@@ -17,12 +17,15 @@ enum PrivacyReader {
         // 通讯录 / 日历 / 提醒
         "NSContactsUsageDescription":         ("通讯录", "person.crop.circle"),
         "NSCalendarsUsageDescription":        ("日历", "calendar"),
+        "NSCalendarsFullAccessUsageDescription": ("日历完整访问", "calendar.badge.clock"),
         "NSRemindersUsageDescription":        ("提醒事项", "list.bullet.rectangle"),
+        "NSRemindersFullAccessUsageDescription": ("提醒事项完整访问", "list.bullet.rectangle.portrait"),
         // 位置
         "NSLocationUsageDescription":         ("位置", "location"),
         "NSLocationAlwaysUsageDescription":    ("位置 (始终)", "location.fill"),
         "NSLocationWhenInUseUsageDescription": ("位置 (使用时)", "location.viewfinder"),
         "NSLocationAlwaysAndWhenInUseUsageDescription": ("位置 (始终+使用时)", "location.fill.viewfinder"),
+        "NSLocationDefaultAccuracyReduced":    ("位置精度 (降级)", "location.slash"),
         // 媒体捕获
         "NSCameraUsageDescription":           ("相机", "camera"),
         "NSMicrophoneUsageDescription":       ("麦克风", "mic"),
@@ -41,6 +44,7 @@ enum PrivacyReader {
         "NSAppleMusicUsageDescription":       ("Apple Music", "music.note"),
         "NSPhotoLibraryUsageDescription":     ("照片库", "photo"),
         "NSPhotoLibraryAddUsageDescription":  ("照片库 (添加)", "photo.badge.plus"),
+        "NSCameraReactionEffectGesturesEnabledDefault": ("相机反应手势", "camera.turn.left"),
         // 语音 / Siri
         "NSSpeechRecognitionUsageDescription": ("语音识别", "waveform.badge.magnifyingglass"),
         "NSSiriUsageDescription":             ("Siri", "siri"),
@@ -53,6 +57,21 @@ enum PrivacyReader {
         "NSVideoSubscriberAccountUsageDescription": ("视频订阅账号", "tv"),
         // AVP spatial
         "NSCameraCaptureUsageDescription":    ("相机捕获", "camera.viewfinder"),
+        // Face ID / Health extras (Motion 已在健康区中)
+        "NSFaceIDUsageDescription":           ("Face ID", "faceid"),
+        // 系统扩展 / 屏幕捕获
+        "NSSystemExtensionUsageDescription": ("系统扩展", "puzzlepiece.extension"),
+        "NSScreenCaptureUsageDescription":   ("屏幕捕获", "rectangle.dashed"),
+        // FileProvider / 通知
+        "NSFileProviderDomainUsageDescription": ("文件提供者域", "folder.fill.badge.plus"),
+        "NSUserNotificationsUsageDescription": ("用户通知", "bell"),
+        "NSLocalNotificationUsageDescription": ("本地通知", "bell.badge"),
+        "NSRemoteNotificationUsageDescription": ("远程通知", "bell.badge.wifi"),
+        // 自动填充 / 安全 / 升级
+        "NSAutoFillRequiresTextContentTypeForOneTimeCodeOnMac": ("自动填充 (验证码)", "text.badge.checkmark"),
+        "NSUpdateSecurityPolicy":            ("更新安全策略", "lock.shield"),
+        // 临时位置
+        "NSLocationTemporaryUsageDescriptionDictionary": ("位置临时使用 (字典)", "location.tor"),
         // 共享/通讯组
         "NSContactsAddUsageDescription":      ("通讯录 (添加)", "person.badge.plus"),
         "NSContactsCardUsageDescription":     ("联系人卡片", "person.crop.rectangle"),
@@ -62,10 +81,10 @@ enum PrivacyReader {
         "NSDesktopFolderUsageDescription":    ("桌面文件夹", "desktopcomputer"),
         "NSDocumentsFolderUsageDescription":  ("文稿文件夹", "folder"),
         "NSDownloadsFolderUsageDescription":  ("下载文件夹", "arrow.down.circle"),
-        "NSNetworkVolumesUsageDescription":  ("网络卷", "network"),
-        "NSRemovableVolumesUsageDescription":("可移动卷", "externaldrive"),
+        "NSNetworkVolumesUsageDescription":   ("网络卷", "network"),
+        "NSRemovableVolumesUsageDescription": ("可移动卷", "externaldrive"),
         // Service
-        "NSServicesUsageDescription":        ("服务 (Services)", "wrench.adjustable"),
+        "NSServicesUsageDescription":         ("服务 (Services)", "wrench.adjustable"),
         // 通用键兜底 —— 任何 "NS<Name>UsageDescription" 但未在上述列表中的
         // 由 parse 时用 default fallback 处理
     ]

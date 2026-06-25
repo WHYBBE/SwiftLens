@@ -150,6 +150,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let v = ex.gpuEjectPolicy { lines.append("GPUEjectPolicy: \(v)") }
         if let v = ex.gpuSelectionPolicy { lines.append("GPUSelectionPolicy: \(v)") }
         if let v = ex.itmsAppUsesNonExemptEncryption { lines.append("ITSAppUsesNonExemptEncryption: \(v)") }
+        // F. 帮助 / 本地化 / Accent / Spotlight
+        if let v = ex.helpBookName { lines.append("CFBundleHelpBookName: \(v)") }
+        if let v = ex.helpBookFolder { lines.append("CFBundleHelpBookFolder: \(v)") }
+        if !ex.bundleLocalizations.isEmpty {
+            lines.append("CFBundleLocalizations: \(ex.bundleLocalizations.joined(separator: ", "))")
+        }
+        if let v = ex.allowMixedLocalizations { lines.append("CFBundleAllowMixedLocalizations: \(v)") }
+        if let v = ex.accentColorName { lines.append("NSAccentColorName: \(v)") }
+        if let v = ex.mdItemKeywords { lines.append("MDItemKeywords: \(v)") }
+        // G. iOS 移植包字段
+        if !ex.uIDeviceFamily.isEmpty {
+            let labels: [Int: String] = [1: "iPhone", 2: "iPad", 3: "Apple TV", 4: "Apple Watch"]
+            lines.append("UIDeviceFamily: \(ex.uIDeviceFamily.map { labels[$0] ?? "\($0)" }.joined(separator: ", "))")
+        }
+        if let v = ex.uiLaunchStoryboardName { lines.append("UILaunchStoryboardName: \(v)") }
+        if let v = ex.uiRequiresFullScreen { lines.append("UIRequiresFullScreen: \(v)") }
+        if !ex.uiSupportedInterfaceOrientations.isEmpty {
+            lines.append("UISupportedInterfaceOrientations: \(ex.uiSupportedInterfaceOrientations.joined(separator: ", "))")
+        }
+        if let v = ex.uiStatusBarStyle { lines.append("UIStatusBarStyle: \(v)") }
+        if !ex.uiBackgroundModes.isEmpty {
+            lines.append("UIBackgroundModes: \(ex.uiBackgroundModes.joined(separator: ", "))")
+        }
+        // H. Electron / 构建元数据 / 厂商
+        if let v = ex.electronTeamID { lines.append("ElectronTeamID: \(v)") }
+        if let v = ex.sourceVersion { lines.append("SourceVersion: \(v)") }
+        if let v = ex.requiredBuildHash { lines.append("requiredBuildHash: \(v)") }
+        if let v = ex.scmRevision { lines.append("SCMRevision: \(v)") }
+        if let v = ex.appIdentifierPrefix { lines.append("AppIdentifierPrefix: \(v)") }
+        if let v = ex.teamIdentifierPlist { lines.append("TeamIdentifier (plist): \(v)") }
+        if let v = ex.bundleSpokenName { lines.append("CFBundleSpokenName: \(v)") }
+        if let v = ex.vendorCode { lines.append("VendorCode: \(v)") }
+        if let v = ex.organizationIdentifier { lines.append("OrganizationIdentifier: \(v)") }
+        if let v = ex.ctFontSuppressAutoDownload { lines.append("CTFontSuppressAutoDownload: \(v)") }
+        if let v = ex.asWebAuthenticationSessionWebBrowserSupportCapabilities {
+            lines.append("ASWebAuthenticationSessionWebBrowserSupportCapabilities: \(v)")
+        }
+        // I. Bonjour
+        if !ex.bonjourServices.isEmpty {
+            lines.append("NSBonjourServices: \(ex.bonjourServices.joined(separator: ", "))")
+        }
         if let q = info.quarantine {
             lines.append("Quarantine: flags=\(q.flags) agent=\(q.agent) 时间=\(q.timestampString) 日期=\(q.downloadDate.map { ISO8601DateFormatter().string(from: $0) } ?? "—")")
         } else {

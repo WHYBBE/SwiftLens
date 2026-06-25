@@ -60,6 +60,38 @@ struct ExtraInfo {
     let gpuEjectPolicy: String?
     let gpuSelectionPolicy: String?
     let itmsAppUsesNonExemptEncryption: Bool?  // ITSAppUsesNonExemptEncryption
+
+    // F. 帮助 / 本地化 / Accent / Spotlight
+    let helpBookName: String?                // CFBundleHelpBookName
+    let helpBookFolder: String?              // CFBundleHelpBookFolder
+    let bundleLocalizations: [String]        // CFBundleLocalizations
+    let allowMixedLocalizations: Bool?       // CFBundleAllowMixedLocalizations
+    let accentColorName: String?             // NSAccentColorName
+    let mdItemKeywords: String?             // MDItemKeywords (Spotlight)
+
+    // G. iOS 移植包字段
+    let uIDeviceFamily: [Int]                // UIDeviceFamily (1=iPhone 2=iPad)
+    let uiLaunchStoryboardName: String?
+    let uiRequiresFullScreen: Bool?
+    let uiSupportedInterfaceOrientations: [String]
+    let uiStatusBarStyle: String?
+    let uiBackgroundModes: [String]
+
+    // H. Electron / 构建 / 厂商
+    let electronTeamID: String?
+    let sourceVersion: String?
+    let requiredBuildHash: String?
+    let scmRevision: String?
+    let appIdentifierPrefix: String?
+    let teamIdentifierPlist: String?         // Info.plist 内的 TeamIdentifier
+    let bundleSpokenName: String?
+    let vendorCode: String?
+    let organizationIdentifier: String?
+    let ctFontSuppressAutoDownload: Bool?
+    let asWebAuthenticationSessionWebBrowserSupportCapabilities: Bool?
+
+    // I. 网络 Bonjour
+    let bonjourServices: [String]
 }
 
 enum ExtraInfoReader {
@@ -68,12 +100,30 @@ enum ExtraInfoReader {
             if let s = plist[key] as? String { return s }
             return plist[key].map { InfoPlistParser.describe($0) }
         }
-        func bool(_ key: String) -> Bool? { plist[key] as? Bool }
+        func bool(_ key: String) -> Bool? {
+            if let b = plist[key] as? Bool { return b }
+            if let n = plist[key] as? NSNumber { return n.boolValue }
+            if let s = plist[key] as? String {
+                if s == "true" || s == "YES" { return true }
+                if s == "false" || s == "NO" { return false }
+            }
+            return nil
+        }
         func int(_ key: String) -> Int? { plist[key] as? Int }
         func arr(_ key: String) -> [String] {
-            (plist[key] as? [String])
-                ?? (plist[key] as? [Any]).map { $0.map { InfoPlistParser.describe($0) } }
-                ?? []
+            let raw = plist[key]
+            if let s = raw as? [String] { return s }
+            if let a = raw as? [Any] { return a.map { InfoPlistParser.describe($0) } }
+            return []
+        }
+        func ints(_ key: String) -> [Int] {
+            if let a = plist[key] as? [Int] { return a }
+            guard let arr = plist[key] as? [Any] else { return [] }
+            return arr.compactMap { v -> Int? in
+                if let n = v as? NSNumber { return n.intValue }
+                if let s = v as? String, let i = Int(s) { return i }
+                return nil
+            }
         }
         func dicts(_ key: String) -> [[String: Any]] {
             (plist[key] as? [[String: Any]])
@@ -118,7 +168,35 @@ enum ExtraInfoReader {
             lsFileQuarantineEnabled: bool("LSFileQuarantineEnabled"),
             gpuEjectPolicy: str("GPUEjectPolicy"),
             gpuSelectionPolicy: str("GPUSelectionPolicy"),
-            itmsAppUsesNonExemptEncryption: bool("ITSAppUsesNonExemptEncryption")
+            itmsAppUsesNonExemptEncryption: bool("ITSAppUsesNonExemptEncryption"),
+            // F. 帮助 / 本地化 / Accent / Spotlight
+            helpBookName: str("CFBundleHelpBookName"),
+            helpBookFolder: str("CFBundleHelpBookFolder"),
+            bundleLocalizations: arr("CFBundleLocalizations"),
+            allowMixedLocalizations: bool("CFBundleAllowMixedLocalizations"),
+            accentColorName: str("NSAccentColorName"),
+            mdItemKeywords: str("MDItemKeywords"),
+            // G. iOS 移植包
+            uIDeviceFamily: ints("UIDeviceFamily"),
+            uiLaunchStoryboardName: str("UILaunchStoryboardName"),
+            uiRequiresFullScreen: bool("UIRequiresFullScreen"),
+            uiSupportedInterfaceOrientations: arr("UISupportedInterfaceOrientations"),
+            uiStatusBarStyle: str("UIStatusBarStyle"),
+            uiBackgroundModes: arr("UIBackgroundModes"),
+            // H. Electron / 构建 / 厂商
+            electronTeamID: str("ElectronTeamID"),
+            sourceVersion: str("SourceVersion"),
+            requiredBuildHash: str("requiredBuildHash"),
+            scmRevision: str("SCMRevision"),
+            appIdentifierPrefix: str("AppIdentifierPrefix"),
+            teamIdentifierPlist: str("TeamIdentifier"),
+            bundleSpokenName: str("CFBundleSpokenName"),
+            vendorCode: str("VendorCode"),
+            organizationIdentifier: str("OrganizationIdentifier"),
+            ctFontSuppressAutoDownload: bool("CTFontSuppressAutoDownload"),
+            asWebAuthenticationSessionWebBrowserSupportCapabilities: bool("ASWebAuthenticationSessionWebBrowserSupportCapabilities"),
+            // I. Bonjour
+            bonjourServices: arr("NSBonjourServices")
         )
     }
 }
