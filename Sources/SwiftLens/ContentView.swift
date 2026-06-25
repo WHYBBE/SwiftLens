@@ -155,6 +155,9 @@ struct ContentView: View {
             DispatchQueue.main.async {
                 self.info = result
                 self.loading = false
+                // 加载完成后把应用拉到前台并使窗口获得焦点
+                NSApp.activate(ignoringOtherApps: true)
+                NSApp.windows.first(where: { $0.canBecomeKey })?.makeKeyAndOrderFront(nil)
             }
         }
     }
