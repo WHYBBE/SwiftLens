@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var dropHover: Bool = false
     @State private var lastError: String?
     @State private var showSettings: Bool = false
+    @State private var spinnerSpin: Bool = false   // 持续旋转的触发开关
 
     var body: some View {
         Group {
@@ -18,11 +19,12 @@ struct ContentView: View {
                     .id(appState.language.rawValue)
             } else {
                 placeholder
+                    .opacity(loading ? 0 : 1)      // 加载时隐藏占位避免与 ProgressView 重叠
                     .id(appState.language.rawValue)
             }
         }
         .overlay {
-            if loading { ProgressView(L10n.t(.analyzing)).controlSize(.large) }
+            if loading { loadingOverlay }
         }
         .background(
             // 整窗拖放接收器
@@ -59,32 +61,66 @@ struct ContentView: View {
     }
 
     private var placeholder: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 22) {
             Image(systemName: "app.badge")
-                .font(.system(size: 72))
+                .font(.system(size: 110, weight: .light))
                 .foregroundStyle(dropHover ? Color.accentColor : Color.secondary)
+                .scaleEffect(dropHover ? 1.08 : 1.0)
+                .animation(.easeInOut(duration: 0.25), value: dropHover)
             Text(dropHover ? L10n.t(.placeholderRelease) : L10n.t(.placeholderDrop))
-                .font(.title2.bold())
+                .font(.system(size: 26, weight: .bold))
                 .foregroundStyle(dropHover ? Color.accentColor : Color.primary)
             Text(L10n.t(.placeholderPick))
-                .font(.callout)
+                .font(.system(.body))
                 .foregroundStyle(.secondary)
             if let err = lastError {
                 Text(err)
-                    .font(.caption)
+                    .font(.callout)
                     .foregroundStyle(.red)
-                    .padding(.top, 8)
+                    .padding(.top, 4)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 20)
                 .strokeBorder(
                     dropHover ? Color.accentColor : Color.secondary.opacity(0.4),
-                    style: StrokeStyle(lineWidth: 2, dash: [6, 4])
+                    style: StrokeStyle(lineWidth: 2, dash: [8, 6])
                 )
-                .padding(dropHover ? 8 : 24)
+                .padding(dropHover ? 8 : 28)
         )
+        .transition(.opacity)
+    }
+
+    // MARK: - 加载遮罩
+    private var loadingOverlay: some View {
+        VStack(spacing: 18) {
+            ZStack {
+                Circle()
+                    .stroke(.quaternary, lineWidth: 6)
+                Circle()
+                    .trim(from: 0, to: 0.75)
+                    .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                    .rotationEffect(.degrees(spinnerSpin ? 360 : 0))   // 持续旋转
+                    .animation(
+                        .linear(duration: 0.9)
+                            .repeatForever(autoreverses: false),
+                        value: spinnerSpin
+                    )
+            }
+            .frame(width: 96, height: 96)
+            Text(L10n.t(.analyzing))
+                .font(.system(.title3, design: .default).bold())
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.regularMaterial)
+        .transition(.opacity)
+        .onAppear {
+            // appear 时启动连续旋转；下一 runloop 再翻转，避免初值 0 与最终值相同被 SwiftUI 优化掉
+            DispatchQueue.main.async { spinnerSpin = true }
+        }
+        .onDisappear { spinnerSpin = false }
     }
 
     // MARK: - Actions
