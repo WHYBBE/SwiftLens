@@ -4,7 +4,7 @@ A native macOS app — built with Swift / SwiftUI / SPM — for inspecting `.app
 
 > 中文版说明请见 [README.zh-CN.md](./README.zh-CN.md).
 
-![SwiftLens](SwiftLens/Assets.xcassets/AppIcon.appiconset/appicon-mac-256@2x.png)
+![SwiftLens preview (English)](docs/preview-en.png)
 
 ## Features
 

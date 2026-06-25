@@ -4,7 +4,7 @@
 
 > English version: [README.md](./README.md).
 
-![SwiftLens](SwiftLens/Assets.xcassets/AppIcon.appiconset/appicon-mac-256@2x.png)
+![SwiftLens 预览（中文）](docs/preview-cn.png)
 
 ## 功能
 
