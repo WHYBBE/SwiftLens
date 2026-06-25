@@ -1,5 +1,7 @@
 # SwiftLens
 
+> Crafted with GLM 5.2 / OpenCode vibe coding.
+
 A native macOS app — built with Swift / SwiftUI / SPM — for inspecting `.app` bundles. Drop any `.app` onto the window and SwiftLens unpacks its identity, signature, quarantine state, architectures, entitlements, embedded sub-bundles, and dozens of other Info.plist fields in a single, scrollable report.
 
 > 中文版说明请见 [README.zh-CN.md](./README.zh-CN.md).

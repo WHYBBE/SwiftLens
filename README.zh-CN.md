@@ -1,5 +1,7 @@
 # SwiftLens
 
+> 由 GLM 5.2 / OpenCode Vibe Coding 而成。
+
 一个用 Swift / SwiftUI / SPM 编写的原生 macOS `.app` 信息查看器。把任意 `.app` 拖到窗口里，SwiftLens 会在一个可滚动的报告中一次性展开它的身份、签名、隔离状态、架构、entitlements、内嵌子 bundle 以及数十个其它 Info.plist 字段。
 
 > English version: [README.md](./README.md).
