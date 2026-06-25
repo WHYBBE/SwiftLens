@@ -91,12 +91,12 @@ struct DetailView: View {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         NSWorkspace.shared.activateFileViewerSelecting([info.bundleURL])
-                    } label: { Label("在访达中显示", systemImage: "folder") }
+                    } label: { Label(L10n.t(.revealInFinder), systemImage: "folder") }
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         copyToPasteboard(summaryString())
-                    } label: { Label("复制摘要", systemImage: "doc.on.doc") }
+                    } label: { Label(L10n.t(.copySummary), systemImage: "doc.on.doc") }
                 }
             }
         }
@@ -137,13 +137,13 @@ struct DetailView: View {
 
                 // Agent App / 仅后台 / iOS 移植 等标识
                 if info.lsUIElement == true {
-                    Badge(text: "Agent App (无 Dock)", color: .purple)
+                    Badge(text: L10n.t(.badgeAgentApp), color: .purple)
                 }
                 if info.lsBackgroundOnly == true {
-                    Badge(text: "仅后台 (Background)", color: .indigo)
+                    Badge(text: L10n.t(.badgeBackground), color: .indigo)
                 }
                 if info.isIOSPort {
-                    Badge(text: "iOS 移植包", color: .pink)
+                    Badge(text: L10n.t(.badgeIOSPort), color: .pink)
                 }
 
                 Button {
@@ -192,7 +192,7 @@ struct DetailView: View {
 
     // MARK: 基本信息
     private var basicSection: some View {
-        SectionView("基本信息") {
+        SectionView(L10n.t(.basicInfo)) {
             RowView(key: "CFBundleDisplayName", value: info.displayName ?? "—")
             RowView(key: "CFBundleName", value: info.bundleName ?? "—")
             RowView(key: "CFBundleIdentifier", value: info.bundleIdentifier ?? "—")
@@ -216,7 +216,7 @@ struct DetailView: View {
 
     // MARK: 运行时 / 部署
     private var runtimeSection: some View {
-        SectionView("运行环境 & 部署") {
+        SectionView(L10n.t(.runtime)) {
             RowView(key: "LSMinimumSystemVersion", value: info.minimumOSVersion ?? "—")
             RowView(key: "LSApplicationCategoryType", value: info.applicationCategoryType ?? "—")
             RowView(key: "LSRequiresAquaSystemAppearance", value: bool(info.requiresAquaSystemAppearance))
@@ -256,8 +256,8 @@ struct DetailView: View {
 
     // MARK: 架构
     private var architecturesSection: some View {
-        SectionView("架构 (Mach-O)",
-                    subtitle: "通用二进制切片") {
+        SectionView(L10n.t(.architectures),
+                    subtitle: "Universal slices") {
             if info.architectures.isEmpty {
                 PlaceholderRow(text: "未找到可执行文件或无法解析 Intel 切片")
             } else {
@@ -282,9 +282,9 @@ struct DetailView: View {
     private static let documentTypesCollapsableThreshold = 6
 
     private var documentTypesSection: some View {
-        SectionView("文档类型 (CFBundleDocumentTypes)", subtitle: "\(info.documentTypes.count) 项") {
+        SectionView(L10n.t(.documentTypes), subtitle: "\(info.documentTypes.count)") {
             if info.documentTypes.isEmpty {
-                PlaceholderRow(text: "未声明自定义文档类型")
+                PlaceholderRow(text: L10n.t(.noneDocType))
             } else {
                 // 数量较多：固定高度 + 提示 + 内嵌滚动
                 let bodyContent = VStack(alignment: .leading, spacing: 8) {
@@ -329,7 +329,7 @@ struct DetailView: View {
 
     // MARK: URL Schemes
     private var urlSchemesSection: some View {
-        SectionView("URL Schemes", subtitle: "\(info.urlSchemes.count) 项") {
+        SectionView(L10n.t(.urlSchemes), subtitle: "\(info.urlSchemes.count)") {
             if info.urlSchemes.isEmpty {
                 PlaceholderRow(text: "未声明 URL Scheme")
             } else {
@@ -343,8 +343,8 @@ struct DetailView: View {
     // MARK: 隐私 / TCC 权限描述
     private var privacySection: some View {
         SectionView(
-            "隐私权限描述 (TCC Usage Descriptions)",
-            subtitle: "\(info.privacyEntries.count) 项"
+            L10n.t(.privacy),
+            subtitle: "\(info.privacyEntries.count)"
         ) {
             if info.privacyEntries.isEmpty {
                 PlaceholderRow(text: "未声明任何 NS***UsageDescription 权限描述")
@@ -384,7 +384,7 @@ struct DetailView: View {
         let ats = info.appTransportSecurity
         let asar = info.electronAsarIntegrity
         return SectionView(
-            "网络安全 / ATS · Electron",
+            L10n.t(.ats),
             subtitle: (ats == nil && asar == nil) ? "无" :
                 [ats != nil ? "ATS" : nil, asar != nil ? "Asar" : nil]
                     .compactMap { $0 }.joined(separator: ", ")
@@ -415,11 +415,11 @@ struct DetailView: View {
     // MARK: 扩展属性全列表
     private var xattrsSection: some View {
         SectionView(
-            "扩展属性 (xattrs)",
-            subtitle: "\(info.extendedXattrs.names.count) 项"
+            L10n.t(.xattrs),
+            subtitle: "\(info.extendedXattrs.names.count)"
         ) {
             if info.extendedXattrs.names.isEmpty {
-                PlaceholderRow(text: "无任何扩展属性")
+                PlaceholderRow(text: L10n.t(.noneXattrs))
             } else {
                 ForEach(info.extendedXattrs.names, id: \.self) { name in
                     RowView(
@@ -435,8 +435,8 @@ struct DetailView: View {
     private var quarantineSection: some View {
         let q = quarantineRemoved ? nil : info.quarantine
         return SectionView(
-            "Quarantine 隔离标记",
-            subtitle: q == nil ? "无" : "已隔离"
+            L10n.t(.quarantine),
+            subtitle: q == nil ? "—" : L10n.t(.badgeIsolated)
         ) {
             if let q = q {
                 RowView(key: "原始值", value: q.raw)
@@ -486,7 +486,7 @@ struct DetailView: View {
     // MARK: 代码签名
     private var codeSignSection: some View {
         let cs = info.codeSign
-        return SectionView("代码签名 (Code Signing)") {
+        return SectionView(L10n.t(.codeSigning)) {
             RowView(key: "签名状态", value: cs.state.rawValue)
             RowView(key: "有效性", value: cs.validity.rawValue)
             RowView(key: "公证 (Notarization)", value: cs.notarization.rawValue)
@@ -541,8 +541,8 @@ struct DetailView: View {
     // MARK: Entitlements
     private var entitlementsSection: some View {
         let cs = info.codeSign
-        return SectionView("Entitlements 权限",
-                           subtitle: cs.entitlements == nil ? "无" : "\(cs.entitlements!.count) 项") {
+        return SectionView(L10n.t(.entitlements),
+                           subtitle: cs.entitlements == nil ? "—" : "\(cs.entitlements!.count)") {
             if let ent = cs.entitlements, !ent.isEmpty {
                 ForEach(InfoPlistParser.flatten(ent).sorted { $0.0 < $1.0 }, id: \.0) { row in
                     RowView(key: row.0, value: row.1)
@@ -565,7 +565,7 @@ struct DetailView: View {
 
     // MARK: 文件信息
     private var fileSection: some View {
-        SectionView("文件信息") {
+        SectionView(L10n.t(.fileInfo)) {
             RowView(key: "完整路径", value: info.bundleURL.path)
             RowView(key: "总大小", value: "\(info.formattedFileSize()) (\(info.fileSize) 字节)")
             RowView(key: "修改时间", value: info.modificationDate.map { iso($0) } ?? "—")
@@ -577,11 +577,11 @@ struct DetailView: View {
     // MARK: 子 bundle (Frameworks / Helpers / XPC / PlugIns)
     private var subBundlesSection: some View {
         SectionView(
-            "内嵌子 bundle",
-            subtitle: "\(info.subBundles.count) 项 · \(formattedSize(info.subBundlesTotalSize))"
+            L10n.t(.subBundles),
+            subtitle: "\(info.subBundles.count) · \(formattedSize(info.subBundlesTotalSize))"
         ) {
             if info.subBundles.isEmpty {
-                PlaceholderRow(text: "未发现内嵌 Framework / Helper / XPC / PlugIns / LoginItems")
+                PlaceholderRow(text: "—")
             } else {
                 ForEach(Array(info.subBundles.enumerated()), id: \.element.id) { i, sub in
                     VStack(alignment: .leading, spacing: 4) {
@@ -625,8 +625,8 @@ struct DetailView: View {
 
     // MARK: 原始 Info.plist
     private var rawPlistSection: some View {
-        SectionView("Info.plist 完整内容",
-                    subtitle: "\(info.flatRows.count) 项键") {
+        SectionView(L10n.t(.rawPlist),
+                    subtitle: "\(info.flatRows.count)") {
             DisclosureGroup("展开 Info.plist 全部键值") {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 4) {
@@ -642,7 +642,7 @@ struct DetailView: View {
 
     // MARK: codesign 原始输出
     private var rawCodesignSection: some View {
-        SectionView("codesign 原始输出") {
+        SectionView(L10n.t(.rawCodesign)) {
             DisclosureGroup("展开 codesign -dvvv 输出") {
                 ScrollView {
                     Text(info.codeSign.detailRaw.isEmpty ? "(无)" : info.codeSign.detailRaw)
@@ -659,8 +659,8 @@ struct DetailView: View {
     private var sparkleSection: some View {
         if let sp = info.extra.sparkle {
             return AnyView(
-                SectionView("Sparkle 自动更新",
-                            subtitle: sp.feedURL ?? "已声明") {
+                SectionView(L10n.t(.sparkle),
+                            subtitle: sp.feedURL ?? "—") {
                     if let v = sp.feedURL { RowView(key: "SUFeedURL", value: v) }
                     if let v = sp.publicEDKey { RowView(key: "SUPublicEDKey", value: v) }
                     if let v = sp.publicDSAKeyFile { RowView(key: "SUPublicDSAKeyFile", value: v) }
@@ -693,8 +693,8 @@ struct DetailView: View {
             || !ex.intentsSupported.isEmpty
             || ex.safariExtensionCorrespondingIOSApp != nil
         return SectionView(
-            "AppleScript / Siri / Intents",
-            subtitle: siriApple ? nil : "无"
+            L10n.t(.appleScriptSiri),
+            subtitle: siriApple ? nil : "—"
         ) {
             if !siriApple {
                 PlaceholderRow(text: "未声明 AppleScript / Siri 相关支持")
@@ -730,8 +730,8 @@ struct DetailView: View {
     // MARK: iCloud 容器
     private var iCloudSection: some View {
         let ub = info.extra.ubiquitousContainers
-        return SectionView("iCloud (NSUbiquitousContainers)",
-                           subtitle: ub.isEmpty ? "无" : "\(ub.count) 项") {
+        return SectionView(L10n.t(.icloud),
+                           subtitle: ub.isEmpty ? "—" : "\(ub.count)") {
             if ub.isEmpty {
                 PlaceholderRow(text: "未声明 iCloud 容器")
             } else {
@@ -756,7 +756,7 @@ struct DetailView: View {
                    || ex.userNotificationsUsageDescription != nil
                    || ex.localNotificationUsageDescription != nil
                    || ex.remoteNotificationUsageDescription != nil)
-        return SectionView("通知 (Notifications)", subtitle: any ? nil : "无") {
+        return SectionView(L10n.t(.notifications), subtitle: any ? nil : "—") {
             if !any {
                 PlaceholderRow(text: "未声明通知相关键")
             } else {
@@ -789,8 +789,8 @@ struct DetailView: View {
                    || ex.gpuEjectPolicy != nil
                    || ex.gpuSelectionPolicy != nil
                    || ex.itmsAppUsesNonExemptEncryption != nil)
-        return SectionView("杂项开关 (生命周期 / 加密合规 / GPU)",
-                           subtitle: any ? nil : "无") {
+        return SectionView(L10n.t(.behaviors),
+                           subtitle: any ? nil : "—") {
             if !any {
                 PlaceholderRow(text: "无相关开关")
             } else {
@@ -817,8 +817,8 @@ struct DetailView: View {
                    || !ex.bundleLocalizations.isEmpty
                    || ex.allowMixedLocalizations != nil
                    || ex.accentColorName != nil || ex.mdItemKeywords != nil)
-        return SectionView("帮助 / 本地化 / Accent / Spotlight",
-                           subtitle: any ? nil : "无") {
+        return SectionView(L10n.t(.localization),
+                           subtitle: any ? nil : "—") {
             if !any {
                 PlaceholderRow(text: "未声明帮助/本地化/Accent/Spotlight 关键词")
             } else {
@@ -845,8 +845,8 @@ struct DetailView: View {
                    || !ex.uiSupportedInterfaceOrientations.isEmpty
                    || ex.uiStatusBarStyle != nil
                    || !ex.uiBackgroundModes.isEmpty)
-        return SectionView("iOS 移植包字段 (UI* 键)",
-                           subtitle: any ? (info.isIOSPort ? "已识别为 iOS 移植包" : "部分键存在") : "无") {
+        return SectionView(L10n.t(.iosPortFields),
+                           subtitle: any ? (info.isIOSPort ? "iOS" : "partial") : "—") {
             if !any {
                 PlaceholderRow(text: "未声明 iOS 移植字段")
             } else {
@@ -886,8 +886,8 @@ struct DetailView: View {
                    || ex.organizationIdentifier != nil
                    || ex.ctFontSuppressAutoDownload != nil
                    || ex.asWebAuthenticationSessionWebBrowserSupportCapabilities != nil)
-        return SectionView("Electron / 构建元数据 / 厂商",
-                           subtitle: any ? nil : "无") {
+        return SectionView(L10n.t(.buildMetadata),
+                           subtitle: any ? nil : "—") {
             if !any {
                 PlaceholderRow(text: "未声明 Electron/厂商/构建元数据")
             } else {
@@ -913,8 +913,8 @@ struct DetailView: View {
     // MARK: Bonjour 服务发现
     private var bonjourSection: some View {
         let ex = info.extra
-        return SectionView("Bonjour 服务发现 (NSBonjourServices)",
-                           subtitle: ex.bonjourServices.isEmpty ? "无" : "\(ex.bonjourServices.count) 项") {
+        return SectionView(L10n.t(.bonjour),
+                           subtitle: ex.bonjourServices.isEmpty ? "—" : "\(ex.bonjourServices.count)") {
             if ex.bonjourServices.isEmpty {
                 PlaceholderRow(text: "未声明 NSBonjourServices")
             } else {
@@ -1163,7 +1163,7 @@ struct DocumentTypeRowView: View {
             VStack(alignment: .leading, spacing: 3) {
                 if !extensions.isEmpty {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text("扩展名").font(.caption).foregroundStyle(.tertiary)
+                        Text(L10n.t(.extName)).font(.caption).foregroundStyle(.tertiary)
                             .frame(width: 70, alignment: .leading)
                         Text(extensions.map { ".\($0)" }.joined(separator: "  "))
                             .font(.system(.caption, design: .monospaced))
@@ -1182,7 +1182,7 @@ struct DocumentTypeRowView: View {
                 }
                 if let rank = rank {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text("优先级").font(.caption).foregroundStyle(.tertiary)
+                        Text(L10n.t(.prioKey)).font(.caption).foregroundStyle(.tertiary)
                             .frame(width: 70, alignment: .leading)
                         Text(rank)
                             .font(.system(.caption, design: .monospaced))
@@ -1190,7 +1190,7 @@ struct DocumentTypeRowView: View {
                 }
                 if let icon = icon {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
-                        Text("图标文件").font(.caption).foregroundStyle(.tertiary)
+                        Text(L10n.t(.iconFile)).font(.caption).foregroundStyle(.tertiary)
                             .frame(width: 70, alignment: .leading)
                         Text(icon)
                             .font(.system(.caption, design: .monospaced))

@@ -6,13 +6,30 @@ import AppKit
 @main
 struct SwiftLensApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @StateObject private var appState = AppState()
 
     var body: some Scene {
         WindowGroup("SwiftLens") {
             ContentView()
+                .preferredColorScheme(appState.theme.colorScheme)
+                .environmentObject(appState)
                 .frame(minWidth: 960, minHeight: 640)
         }
+        .commands {
+            CommandGroup(after: .appSettings) {
+                Button(L10n.t(.settings)) {
+                    NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                    // 兜底：发送一个通知让 ContentView 关心设置弹出
+                    NotificationCenter.default.post(name: .openSettings, object: nil)
+                }
+                .keyboardShortcut(",", modifiers: .command)
+            }
+        }
     }
+}
+
+extension Notification.Name {
+    static let openSettings = Notification.Name("SwiftLens.openSettings")
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
