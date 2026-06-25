@@ -20,6 +20,33 @@ struct DetailView: View {
         case subBundles
     }
 
+    /// 顶部「架构」徽标：空 → [未知]；单 → [名字]；多切片 → [Universal] [a] [b] ... 多个独立 badge
+    @ViewBuilder
+    private func archBadges(proxy: ScrollViewProxy) -> some View {
+        if info.architectures.isEmpty {
+            Button {
+                withAnimation { proxy.scrollTo(DetailAnchor.architectures, anchor: .top) }
+            } label: { Badge(text: "未知架构", color: .blue) }
+                .buttonStyle(.plain).help("跳转到「架构」分区")
+        } else if info.architectures.count == 1 {
+            Button {
+                withAnimation { proxy.scrollTo(DetailAnchor.architectures, anchor: .top) }
+            } label: { Badge(text: info.architectures.first!.name, color: .blue) }
+                .buttonStyle(.plain).help("跳转到「架构」分区")
+        } else {
+            Button {
+                withAnimation { proxy.scrollTo(DetailAnchor.architectures, anchor: .top) }
+            } label: { Badge(text: "Universal", color: .blue) }
+                .buttonStyle(.plain).help("跳转到「架构」分区")
+            ForEach(Array(info.architectures.enumerated()), id: \.offset) { _, arch in
+                Button {
+                    withAnimation { proxy.scrollTo(DetailAnchor.architectures, anchor: .top) }
+                } label: { Badge(text: arch.name, color: .blue.opacity(0.85)) }
+                    .buttonStyle(.plain).help("跳转到「架构」分区")
+            }
+        }
+    }
+
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
@@ -103,18 +130,10 @@ struct DetailView: View {
             Spacer()
             VStack(alignment: .trailing, spacing: 8) {
                 // 顺序与下方分区一致：架构 → 隔离 → 代码签名
-                Button {
-                    withAnimation { proxy.scrollTo(DetailAnchor.architectures, anchor: .top) }
-                } label: {
-                    let archLabel = info.architectures.isEmpty
-                        ? "未知架构"
-                        : (info.architectures.count > 1
-                            ? "Universal (\(info.architectures.count) 切片)"
-                            : info.architectures.first!.name)
-                    Badge(text: archLabel, color: .blue)
+                // 架构通用二进制时会拆成多个独立 badge (Universal · arm64 · x86_64 ...)
+                HStack(spacing: 6) {
+                    archBadges(proxy: proxy)
                 }
-                .buttonStyle(.plain)
-                .help("跳转到「架构」分区")
 
                 // Agent App / 仅后台 / iOS 移植 等标识
                 if info.lsUIElement == true {
