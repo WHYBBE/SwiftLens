@@ -7,6 +7,8 @@ import AppKit
 struct SwiftLensApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var appState = AppState()
+    @State private var showSettings: Bool = false
+    @State private var showAbout: Bool = false
 
     var body: some Scene {
         WindowGroup("SwiftLens") {
@@ -14,13 +16,32 @@ struct SwiftLensApp: App {
                 .preferredColorScheme(appState.theme.colorScheme)
                 .environmentObject(appState)
                 .frame(minWidth: 960, minHeight: 640)
+                .sheet(isPresented: $showSettings) {
+                    SettingsView()
+                        .environmentObject(appState)
+                        .id(appState.language.rawValue)
+                }
+                .sheet(isPresented: $showAbout) {
+                    AboutView()
+                        .id(appState.language.rawValue)
+                }
+                .onReceive(NotificationCenter.default.publisher(for: .openSettings)) { _ in
+                    showSettings = true
+                }
+                .onReceive(NotificationCenter.default.publisher(for: .openAbout)) { _ in
+                    showAbout = true
+                }
         }
         .commands {
+            // 保留系统默认 "About SwiftLens" 项, 但拦截其动作打开自定义 AboutView
+            CommandGroup(replacing: .appInfo) {
+                Button(L10n.t(.about)) {
+                    showAbout = true
+                }
+            }
             CommandGroup(after: .appSettings) {
                 Button(L10n.t(.settings)) {
-                    NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-                    // 兜底：发送一个通知让 ContentView 关心设置弹出
-                    NotificationCenter.default.post(name: .openSettings, object: nil)
+                    showSettings = true
                 }
                 .keyboardShortcut(",", modifiers: .command)
             }
@@ -30,6 +51,7 @@ struct SwiftLensApp: App {
 
 extension Notification.Name {
     static let openSettings = Notification.Name("SwiftLens.openSettings")
+    static let openAbout    = Notification.Name("SwiftLens.openAbout")
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {

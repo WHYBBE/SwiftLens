@@ -9,7 +9,6 @@ struct ContentView: View {
     @State private var loading: Bool = false
     @State private var dropHover: Bool = false
     @State private var lastError: String?
-    @State private var showSettings: Bool = false
     @State private var spinnerSpin: Bool = false   // 持续旋转的触发开关
 
     var body: some View {
@@ -44,20 +43,15 @@ struct ContentView: View {
                         Label(L10n.t(.clear), systemImage: "arrow.uturn.backward")
                     }
                 }
-                Button { showSettings = true } label: {
+                Button {
+                    NotificationCenter.default.post(name: .openSettings, object: nil)
+                } label: {
                     Label(L10n.t(.settings), systemImage: "gearshape")
                 }
             }
         }
         .navigationTitle(info?.bundleURL.lastPathComponent ?? L10n.t(.appName))
-        .sheet(isPresented: $showSettings) {
-            SettingsView()
-                .environmentObject(appState)
-                .id(appState.language.rawValue)
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .openSettings)) { _ in
-            showSettings = true
-        }
+        // 设置 sheet 现在由 SwiftLensApp 统一管理，工具栏按钮只负责发通知
     }
 
     private var placeholder: some View {

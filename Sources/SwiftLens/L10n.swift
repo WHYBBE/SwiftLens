@@ -8,8 +8,9 @@ enum L10n {
 
     /// 已支持的 key，与下面两张表一一对应。
     enum Key: String {
-        // 设置
+        // 设置 / 关于
         case settings
+        case about
         case language
         case theme
         case langSystem
@@ -77,7 +78,7 @@ enum L10n {
 
     /// 中文表
     private static let zh: [Key: String] = [
-        .settings: "设置", .language: "语言", .theme: "主题",
+        .settings: "设置", .about: "关于 SwiftLens", .language: "语言", .theme: "主题",
         .langSystem: "跟随系统", .langZh: "中文", .langEn: "English",
         .themeSystem: "跟随系统", .themeLight: "浅色", .themeDark: "深色",
         .close: "关闭",
@@ -109,7 +110,7 @@ enum L10n {
 
     /// 英文表（缺失时回退到 zh key 字面名）
     private static let en: [Key: String] = [
-        .settings: "Settings", .language: "Language", .theme: "Theme",
+        .settings: "Settings", .about: "About SwiftLens", .language: "Language", .theme: "Theme",
         .langSystem: "Follow System", .langZh: "中文", .langEn: "English",
         .themeSystem: "Follow System", .themeLight: "Light", .themeDark: "Dark",
         .close: "Close",
