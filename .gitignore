@@ -1,8 +1,14 @@
 .build/
 .swiftpm/
-*.xcodeproj/
 DerivedData/
 Package.resolved
+
+# Xcode: 保留项目本体, 忽略用户级缓存与派生数据
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.swiftpm/
+*.xcodeproj/.swiftpm/
 
 # macOS
 .DS_Store

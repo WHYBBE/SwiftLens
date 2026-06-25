@@ -1,0 +1,370 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2D1D30BE9D26A6D592696032 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8A33852E2CCDA0DEF418B8 /* L10n.swift */; };
+		30A5B52914B1E3138477806C /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C37D255005297A2E3CAA6D7E /* DetailView.swift */; };
+		4397F0C6BF65F046CCDDD0AA /* ExtraInfoReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EE3F81620219ECDED462D3E /* ExtraInfoReader.swift */; };
+		63446124D8536F3C0F7DA22F /* QuarantineReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F4FC2179C1929ECFB2F76B /* QuarantineReader.swift */; };
+		7DCF7F76132B80DF4BFAAE76 /* SwiftLensApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12CDEB5C90F426D51F23773D /* SwiftLensApp.swift */; };
+		880B808D17F4616316473A23 /* AppInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3C452BB8BE97BB79469AB8D /* AppInfo.swift */; };
+		90FAE49826412170FBE4EC18 /* InfoPlistParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477E6AE75CCDD0E66CDC0B63 /* InfoPlistParser.swift */; };
+		A9879BF412713FC1D01C36CC /* ExtendedXattrReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3664FAC4DF1282A2CEDA5527 /* ExtendedXattrReader.swift */; };
+		BDFDC26FEAB4583F9CC04301 /* CodeSignReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C795C5BDC92F66A143953E7 /* CodeSignReader.swift */; };
+		BE899970B1B9CEFEE5E2341D /* PrivacyReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B1C09A3AEFCD012CD65858 /* PrivacyReader.swift */; };
+		C2F231C9C978638C05D23E79 /* SubBundleScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C46223D5510A6F3D23A95FB8 /* SubBundleScanner.swift */; };
+		C69D032D84BD60CA0E4946BF /* ArchitectureReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 312272AC65AD4042BC50775A /* ArchitectureReader.swift */; };
+		C8A558CE16D3FC89251F2168 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D75198F55662D1DF7CC70A /* AppState.swift */; };
+		F69D1B62FB8F63FA4E797C4B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F89D7B19C67A6CC0E2288052 /* ContentView.swift */; };
+		F7F1ABB3BE7716A0859A7E24 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407C136457DAE38D97BD9569 /* SettingsView.swift */; };
+		F85E9AC53704B2FB0232A554 /* SharedViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F40FCCD35CE21ABC430456D /* SharedViews.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		12CDEB5C90F426D51F23773D /* SwiftLensApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftLensApp.swift; sourceTree = "<group>"; };
+		312272AC65AD4042BC50775A /* ArchitectureReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchitectureReader.swift; sourceTree = "<group>"; };
+		3664FAC4DF1282A2CEDA5527 /* ExtendedXattrReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedXattrReader.swift; sourceTree = "<group>"; };
+		3C795C5BDC92F66A143953E7 /* CodeSignReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeSignReader.swift; sourceTree = "<group>"; };
+		407C136457DAE38D97BD9569 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		477E6AE75CCDD0E66CDC0B63 /* InfoPlistParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoPlistParser.swift; sourceTree = "<group>"; };
+		5E8A33852E2CCDA0DEF418B8 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
+		5EE3F81620219ECDED462D3E /* ExtraInfoReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtraInfoReader.swift; sourceTree = "<group>"; };
+		64B1C09A3AEFCD012CD65858 /* PrivacyReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyReader.swift; sourceTree = "<group>"; };
+		9F40FCCD35CE21ABC430456D /* SharedViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedViews.swift; sourceTree = "<group>"; };
+		B8F4FC2179C1929ECFB2F76B /* QuarantineReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuarantineReader.swift; sourceTree = "<group>"; };
+		C37D255005297A2E3CAA6D7E /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
+		C46223D5510A6F3D23A95FB8 /* SubBundleScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubBundleScanner.swift; sourceTree = "<group>"; };
+		C9D75198F55662D1DF7CC70A /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		D3C452BB8BE97BB79469AB8D /* AppInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInfo.swift; sourceTree = "<group>"; };
+		E8E0EEAA59E4030BCDBC59E9 /* SwiftLens.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftLens.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F89D7B19C67A6CC0E2288052 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		16F4A7449B1B19BC99B6CA3B /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				805E5D4AF2E259F4F601E7EE /* SwiftLens */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		805E5D4AF2E259F4F601E7EE /* SwiftLens */ = {
+			isa = PBXGroup;
+			children = (
+				D3C452BB8BE97BB79469AB8D /* AppInfo.swift */,
+				C9D75198F55662D1DF7CC70A /* AppState.swift */,
+				312272AC65AD4042BC50775A /* ArchitectureReader.swift */,
+				3C795C5BDC92F66A143953E7 /* CodeSignReader.swift */,
+				F89D7B19C67A6CC0E2288052 /* ContentView.swift */,
+				C37D255005297A2E3CAA6D7E /* DetailView.swift */,
+				3664FAC4DF1282A2CEDA5527 /* ExtendedXattrReader.swift */,
+				5EE3F81620219ECDED462D3E /* ExtraInfoReader.swift */,
+				477E6AE75CCDD0E66CDC0B63 /* InfoPlistParser.swift */,
+				5E8A33852E2CCDA0DEF418B8 /* L10n.swift */,
+				64B1C09A3AEFCD012CD65858 /* PrivacyReader.swift */,
+				B8F4FC2179C1929ECFB2F76B /* QuarantineReader.swift */,
+				407C136457DAE38D97BD9569 /* SettingsView.swift */,
+				9F40FCCD35CE21ABC430456D /* SharedViews.swift */,
+				C46223D5510A6F3D23A95FB8 /* SubBundleScanner.swift */,
+				12CDEB5C90F426D51F23773D /* SwiftLensApp.swift */,
+			);
+			path = SwiftLens;
+			sourceTree = "<group>";
+		};
+		9357879FBAC64537E5D47EBF = {
+			isa = PBXGroup;
+			children = (
+				16F4A7449B1B19BC99B6CA3B /* Sources */,
+				A11A348EA6AD38B9E2BA1450 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A11A348EA6AD38B9E2BA1450 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E8E0EEAA59E4030BCDBC59E9 /* SwiftLens.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8791C02596D8E133EC0CE543 /* SwiftLens */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8BF5EF0ED196F3759F74E8C4 /* Build configuration list for PBXNativeTarget "SwiftLens" */;
+			buildPhases = (
+				46B06C6270A1F0DD3883256C /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SwiftLens;
+			packageProductDependencies = (
+			);
+			productName = SwiftLens;
+			productReference = E8E0EEAA59E4030BCDBC59E9 /* SwiftLens.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		826A2D7A6880A42B32A94531 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					8791C02596D8E133EC0CE543 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = F609E88C7C82B44A70A709F2 /* Build configuration list for PBXProject "SwiftLens" */;
+			developmentRegion = "zh-Hans";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				"zh-Hans",
+			);
+			mainGroup = 9357879FBAC64537E5D47EBF;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = A11A348EA6AD38B9E2BA1450 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8791C02596D8E133EC0CE543 /* SwiftLens */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		46B06C6270A1F0DD3883256C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				880B808D17F4616316473A23 /* AppInfo.swift in Sources */,
+				C8A558CE16D3FC89251F2168 /* AppState.swift in Sources */,
+				C69D032D84BD60CA0E4946BF /* ArchitectureReader.swift in Sources */,
+				BDFDC26FEAB4583F9CC04301 /* CodeSignReader.swift in Sources */,
+				F69D1B62FB8F63FA4E797C4B /* ContentView.swift in Sources */,
+				30A5B52914B1E3138477806C /* DetailView.swift in Sources */,
+				A9879BF412713FC1D01C36CC /* ExtendedXattrReader.swift in Sources */,
+				4397F0C6BF65F046CCDDD0AA /* ExtraInfoReader.swift in Sources */,
+				90FAE49826412170FBE4EC18 /* InfoPlistParser.swift in Sources */,
+				2D1D30BE9D26A6D592696032 /* L10n.swift in Sources */,
+				BE899970B1B9CEFEE5E2341D /* PrivacyReader.swift in Sources */,
+				63446124D8536F3C0F7DA22F /* QuarantineReader.swift in Sources */,
+				F7F1ABB3BE7716A0859A7E24 /* SettingsView.swift in Sources */,
+				F85E9AC53704B2FB0232A554 /* SharedViews.swift in Sources */,
+				C2F231C9C978638C05D23E79 /* SubBundleScanner.swift in Sources */,
+				7DCF7F76132B80DF4BFAAE76 /* SwiftLensApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1A5CAB93A473C6EEECE9D54A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = SwiftLens/SwiftLens.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SwiftLens/Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swiftlens.SwiftLens;
+				PRODUCT_NAME = SwiftLens;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.5;
+			};
+			name = Debug;
+		};
+		2D7CBC590F8F2187092259A8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SwiftLens/SwiftLens.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = SwiftLens/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		42D12258E29B0B0D901D2138 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = SwiftLens/SwiftLens.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SwiftLens/Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.swiftlens.SwiftLens;
+				PRODUCT_NAME = SwiftLens;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.5;
+			};
+			name = Release;
+		};
+		E92C388A2B0F0B7EEC408C24 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SwiftLens/SwiftLens.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = SwiftLens/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8BF5EF0ED196F3759F74E8C4 /* Build configuration list for PBXNativeTarget "SwiftLens" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2D7CBC590F8F2187092259A8 /* Debug */,
+				E92C388A2B0F0B7EEC408C24 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F609E88C7C82B44A70A709F2 /* Build configuration list for PBXProject "SwiftLens" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A5CAB93A473C6EEECE9D54A /* Debug */,
+				42D12258E29B0B0D901D2138 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 826A2D7A6880A42B32A94531 /* Project object */;
+}
